@@ -5,8 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/v1rus_rules.py", "session-start"],
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-charter.py\"",
             "timeout": 10
           }
         ]
@@ -14,12 +13,42 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "matcher": "Read|Write|Edit|MultiEdit|NotebookEdit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/v1rus_rules.py", "path-rules"],
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/secrets-guard.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/git-guard.py\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/path-rules.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/path-rules.py\"",
             "timeout": 10
           }
         ]

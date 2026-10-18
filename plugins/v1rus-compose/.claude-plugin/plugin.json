@@ -1,10 +1,21 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "v1rus-compose",
-  "version": "1.1.1",
-  "description": "Jetpack Compose and Compose Multiplatform UI rules, skills and agents.",
+  "displayName": "v1rus Compose",
+  "version": "2.0.0",
+  "description": "Everything v1rus holds true for a Compose application regardless of target — shared by Compose Multiplatform and native-Android Jetpack Compose: the Destination-Screen split and MVI store, one composable per file with previews, the screen-state and accessibility checklist, animated state changes, typed routes with dialogs and bottom sheets as destinations, Koin modules, localisation, and the full Compose performance and stability set (stability inference, strong skipping, recomposition tracing, lazy layouts, phase deferral, Modifier.Node, R8, Baseline Profiles, release-mode measurement, CI stability gates, hot reload), plus the compose-developer agent.",
   "author": {
-    "name": "v1rus-dev"
+    "name": "v1rus"
   },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "compose",
+    "jetpack-compose",
+    "mvi",
+    "koin",
+    "performance"
+  ],
   "dependencies": [
     "v1rus-kotlin"
   ]

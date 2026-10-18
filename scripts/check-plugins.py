@@ -16,7 +16,6 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PLUGINS = ROOT / "plugins"
-ENGINE_FILES = ("hooks/v1rus_rules.py", "hooks/hooks.json")
 errors, warnings = [], []
 
 
@@ -164,18 +163,10 @@ def check_plugin(pdir, listed):
     for rl in sorted((pdir / "rules").glob("*.md")):
         fm = frontmatter(rl.read_text(encoding="utf-8")) or ""
         if not re.search(r"^paths\s*:", fm, re.M):
-            warn("%s: rule without `paths:` is never injected by the path engine (put always-on text in charter.md)" % rl.relative_to(ROOT))
-    ch = pdir / "charter.md"
+            warn("%s: rule without `paths:` is never injected by the path engine (put always-on text in core's hooks/charter.md)" % rl.relative_to(ROOT))
+    ch = pdir / "hooks" / "charter.md"
     if ch.is_file() and len(ch.read_text(encoding="utf-8").splitlines()) > 200:
         warn("%s: charter over 200 lines (loaded every session)" % ch.relative_to(ROOT))
-
-    # engine copies
-    canon = PLUGINS / "v1rus-core"
-    if name != "v1rus-core":
-        for f in ENGINE_FILES:
-            a, b = canon / f, pdir / f
-            if not b.is_file() or a.read_bytes() != b.read_bytes():
-                err("%s: %s differs from v1rus-core (run scripts/sync-engine.py)" % (name, f))
 
     check_references(pdir)
     return pj
@@ -213,7 +204,7 @@ def check_agent_refs(plugins):
                         warn("%s:%d: agent `%s` is not defined in %s or its dependency chain (make it explicitly optional: 'if installed, else ...')" % (f.relative_to(ROOT), ln, m.group(1), n))
 
 
-REF_RE = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s\"'`)>\]]+)")
+REF_RE = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s\"'`)>\]\\…]+)")
 LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)\)")
 PIN_RE = re.compile(r"[A-Za-z][\w.-]*\.[\w.-]+:[\w.-]+:\d+\.\d+(?:\.\d+)?|\bversion\s*=\s*\"\d+\.\d+")
 

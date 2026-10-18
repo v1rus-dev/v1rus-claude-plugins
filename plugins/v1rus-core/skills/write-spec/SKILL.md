@@ -73,7 +73,7 @@ Don't run everything by default. Activate tracks based on what gives useful sign
 | New module / cross-layer / architectural change | Codebase + Architecture |
 | External API / protocol / algorithm / unfamiliar domain | Web Research |
 | Vague idea, unclear user-facing impact | Business Analyst |
-| Library / versioning / dependency concern | Web Research (+ a dependency-intelligence tool if connected) |
+| Library / versioning / dependency concern | Web Research (+ maven-mcp if JVM) |
 | Straightforward single-module change | Codebase only |
 
 **If the project has existing business / requirements docs** (`docs/`, `*.md` specs, linked issues), read them **before** launching agents — they often answer questions upfront.
@@ -138,7 +138,7 @@ Write the spec as if the reader is an implementing agent with zero additional co
 Nothing can be left to inference. Every requirement is verifiable. Every decision is
 explicit with its rationale.
 
-Follow the canonical Markdown spec template — YAML frontmatter with `type`/`slug`/`date`/`status` plus optional `platform`/`surfaces`/`risk_areas`/`non_functional`/`acceptance_criteria_ids`/`design` fields that drive downstream the acceptance gate and `generate-test-plan`, followed by body sections: Context and Motivation, Acceptance Criteria (stable `AC-N` ids), Prerequisites, Affected Modules and Files, Technical Approach, Technical Constraints, Decisions Made, Out of Scope, Open Questions, and Future Phases.
+Follow the canonical Markdown spec template — YAML frontmatter with `type`/`slug`/`date`/`status` plus optional `platform`/`surfaces`/`risk_areas`/`non_functional`/`acceptance_criteria_ids`/`design` fields that drive downstream `acceptance` and `generate-test-plan`, followed by body sections: Context and Motivation, Acceptance Criteria (stable `AC-N` ids), Prerequisites, Affected Modules and Files, Technical Approach, Technical Constraints, Decisions Made, Out of Scope, Open Questions, and Future Phases.
 
 See [`references/spec-template.md`](references/spec-template.md) for the full template (frontmatter fields, section headers, table shapes, and inline instructions) — copy it verbatim into the draft and fill in each placeholder.
 
@@ -217,7 +217,7 @@ completeness, blocking vs non-blocking open questions, technical-approach detail
 
 **Do not shrink the reviewer panel.** Include ALL triggered reviewers that are installed —
 if the profile's `optional_if` regex matches (security-expert on PII/auth/encryption,
-performance-expert (ships with `v1rus-kotlin`; optional) on SLA/latency/budget, ux-expert on a11y/UI/UX), the engine includes
+performance-expert on SLA/latency/budget, ux-expert on a11y/UI/UX), the engine includes
 them when installed and skips them when not; call out any skipped-due-to-missing reviewer
 rather than silently dropping the perspective.
 Skipping a profile-triggered reviewer because «that domain was already covered in an

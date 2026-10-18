@@ -63,7 +63,7 @@ checklist of mild curiosities.
 
 When to ask:
 - **Scope is genuinely ambiguous** (multiple valid interpretations that lead to different expert tracks or different success criteria).
-- **A constraint is missing without which the redirect / consortium decision flips** (e.g. a single-platform vs multi-platform scope changes which tracks are relevant).
+- **A constraint is missing without which the redirect / consortium decision flips** (e.g. KMP-only vs Android-only changes which tracks are relevant).
 
 When NOT to ask:
 - Mild gaps the consortium can fill itself (let agents gather, surface anything blocking later in Phase 5.1 dialogue).
@@ -80,7 +80,7 @@ If the topic resolves to **only one** expert track after applying selection crit
 |---|---|
 | Codebase only | Delegate to a single `Explore` agent inline |
 | Docs only | Use a library-docs lookup tool (Context7-style) directly |
-| Dependencies only | Use a dependency/version lookup tool directly (a Maven dependency tool if connected, else `npm view` / `pip index versions` / `cargo search`) |
+| Dependencies only | Use a dependency/version lookup tool directly (e.g. the `maven-mcp` skill family if installed) |
 | Architecture only | Delegate to `architecture-expert` agent directly |
 | Web only | Answer inline with the available web-search tool; if none is available, answer from training knowledge and explicitly note the limitation |
 
@@ -110,7 +110,7 @@ the exact launch prompts):
 
 The three external tracks do **not** carry a hardcoded toolset: `source-researcher` discovers
 the tools/MCP actually reachable at runtime and queries every relevant channel of its class,
-per the single method in `${CLAUDE_PLUGIN_ROOT}/skills/v1rus-sources/reference/sources.md` § *Tool discovery & multi-channel use*
+per the single method in the `v1rus-sources` skill § *Tool discovery & multi-channel use*
 (inherited by the agent — not restated in the prompt). Keeping the three as **separate**
 instances preserves the synthesis-bias invariant — never merge them into one `source-researcher`
 call. The codebase-bound tracks keep their verbatim prompts (Explore and architecture-expert have

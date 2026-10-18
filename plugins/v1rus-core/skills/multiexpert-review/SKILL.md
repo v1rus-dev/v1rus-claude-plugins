@@ -39,7 +39,7 @@ Read artifact + detect profile → discover agents, pre-select per `profile.revi
 
 ## Persistence (compaction resilience)
 
-Save state to `./swarm-report/multiexpert-review-<slug>-state.md` (or `multiexpert-review-<YYYYMMDD-HHMM>-state.md` if no slug known). The state file is a working note: record the current step, selected reviewers and collected verdicts so a compacted session can resume.
+Save state to `./swarm-report/multiexpert-review-<slug>-state.md` (or `multiexpert-review-<YYYYMMDD-HHMM>-state.md` if no slug known). Follow the persistent-state template conventions from the v1rus engineering charter § Context compaction resilience.
 
 **Slug source** (priority order): explicit caller args (`slug:`), artifact frontmatter `slug:`, artifact filename without extension, timestamp fallback.
 
@@ -86,7 +86,7 @@ Locate the artifact in this order: (1) active Plan Mode output in conversation, 
 
 Find real agents via `Glob("**/agents/*.md")` + built-in subagents from system prompt. Read each agent's frontmatter to confirm. Never invent phantom agents.
 
-**Short-name collision tie-break:** prefer first match in order: (1) same-plugin as caller, (2) a sibling v1rus plugin, (3) any other source. Still ambiguous → fail loud with `[multiexpert-review ERROR] AMBIGUOUS_REVIEWER: short-name <name> resolves to <paths>`. Distinct from `NO_REVIEWERS_AVAILABLE`. The v1rus plugins keep short-names unique, so this only triggers on conflicts with foreign agents.
+**Short-name collision tie-break:** prefer first match in order: (1) same-plugin as caller, (2) sibling `developer-workflow-*` plugin, (3) any other source. Still ambiguous → fail loud with `[multiexpert-review ERROR] AMBIGUOUS_REVIEWER: short-name <name> resolves to <paths>`. Distinct from `NO_REVIEWERS_AVAILABLE`. The family guarantees unique short-names — this only triggers on non-family conflicts.
 
 ### Selection per profile
 
@@ -106,7 +106,7 @@ Exactly 1 agent selected:
 
 ### User confirmation
 
-Use `AskUserQuestion` with `multiSelect: true`, recommended agents first with one-sentence reason. If the user's prompt named specific agents (e.g., "review with security-expert"), skip discovery confirmation and use those.
+Use `AskUserQuestion` with `multiSelect: true`, recommended agents first with one-sentence reason. If the user's prompt named specific agents (e.g., "review with kotlin-engineer"), skip discovery confirmation and use those.
 
 ## Step 3 — Parallel independent review
 

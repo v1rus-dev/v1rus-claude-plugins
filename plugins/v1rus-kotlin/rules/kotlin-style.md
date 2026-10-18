@@ -4,52 +4,148 @@ paths:
   - "**/*.kts"
 ---
 
-# Kotlin style and layering
+# Kotlin Rules
 
-Covers conventions a modern model omits by default. Generic idiomatic Kotlin (null safety, naming, file organization) is not repeated here; follow the official Kotlin coding conventions. An established project convention that differs from a rule below wins.
+Applies to `.kt` and `.kts` files. Covers code style (visibility, collections, named arguments, empty blocks) plus project conventions a modern model omits by default — value-class validation, parameter nullability, KMP `commonMain` constraints, Clean Architecture + MVI layering. Generic idiomatic Kotlin (null safety, naming, organization) is **not** documented here; trust the model and the [official Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html).
 
-## Visibility: minimum by default
+## Visibility — minimum by default
 
-Pick the narrowest visibility that works: `private` (one file/class) over `internal` (one module) over public (deliberate API surface).
+The visibility of every declaration must be the narrowest one that still works. Always pick from this priority:
 
-- New code in implementation modules/packages: `internal` by default, `private` when not referenced outside its file/class.
-- Top-level functions, extensions, properties, constructors, companion members, sealed hierarchies follow the same priority. A constructor used only via a factory or DI is `internal`/`private`.
-- Do not write the `public` keyword (it is the default); reserve explicit modifiers for `internal` and `private`.
-- Unsure between `internal` and public: `internal`. Widening later is trivial; narrowing is breaking.
-- `.kts` scripts (convention plugins, build scripts): same rule for top-level helpers.
+1. **`private`** — first choice. Used inside one file or one class only.
+2. **`internal`** — next choice. Used across files inside the same module.
+3. **`public`** — last resort. Only for declarations that are intentionally part of the module's external API surface.
 
-## Collections: operators over `for` loops
+Do not leave declarations at default `public` visibility "just because it compiles". Default `public` is a deliberate API decision, not a fallback.
 
-Prefer stdlib operators (`filter`, `map`, `mapNotNull`, `flatMap`, `sumOf`, `count`, `groupBy`, `associateBy`, `find`, `firstOrNull`, `any`/`all`/`none`, `fold`, `buildList`/`buildMap`, `onEach`) over imperative loops with `if`/`add`/`continue`.
+If the project has a clearly different, established visibility convention, follow the project.
 
-Keep a `for` loop when: the body early-`return`s from the enclosing function; several unrelated side effects happen per iteration; index/neighbour access is clearer than `zipWithNext`/`windowed`; a profiled hot path needs to avoid intermediate collections (try `asSequence()` first). Past three operators or a `let` tower, reconsider, but do not fall back to `for` mechanically.
+### How to apply
 
-## Named arguments for ambiguous calls
+- **New code in feature / internal-implementation modules** (`internal/` packages, `feature/.../internal/`, anything not in `api/`) → `internal` by default. Use `private` whenever the symbol is not referenced outside its file/class.
+- **Public API modules** (`api/`, exposed contracts in `:protocol/`, `:new-core/` shared infra) → `public` is acceptable, but only for declarations meant to be used by other modules. Internal helpers in these modules still go to `internal` / `private`.
+- **Top-level functions, extensions, properties** — same rule. A helper used only inside one file → `private`. Used across the module → `internal`. Never make it public unless other modules need it.
+- **Classes, interfaces, sealed hierarchies** — narrowest visibility wins. A sealed class implementation hierarchy used only inside the module must be `internal`.
+- **Constructors** — narrow them too. If a class is instantiated only through a factory or DI, mark the constructor `internal` or `private`.
+- **`companion object` members** — same priorities.
+- **Don't write the `public` keyword explicitly** — it's the Kotlin default. Writing `public class Foo` is redundant; use `class Foo`. The `public` keyword adds noise and signals nothing. Reserve explicit modifiers for `internal` and `private`.
 
-Name an argument when it is a primitive whose meaning is not obvious at the call site, when several parameters share a type (name all of that type), or when it is a lone boolean literal (`setVisible(visible = true)`). Positional is fine for a domain-typed argument that documents itself (`show(dialog)`) and for well-known stdlib calls (`maxOf(a, b)`, `Pair(k, v)`). Test: a reader who sees only the call site must infer each argument.
+### When unsure
 
-## Empty blocks: delete the call
+If you cannot decide between `internal` and `public` — pick `internal`. Widening visibility later is trivial; narrowing it later is a breaking change for anyone who already used the broader form.
 
-An empty `apply {}` / `also {}` / `run {}` / `let {}` / `forEach {}` / `onEach {}` / `init {}` carries no behaviour: delete it (or replace with the receiver if the value is used). Keep an empty body required by an interface/abstract override, with a one-line `// no-op: <reason>`. An empty `onClick = {}` default is acceptable only if the API requires non-null; prefer a nullable parameter. An empty `catch` is a separate problem: handle/log it or remove the `try`.
+### `.kts` (Gradle Kotlin DSL)
 
-## Value classes
+Same rule applies. Top-level helpers in convention plugins, `build.gradle.kts`, and `settings.gradle.kts` should be `private` if used only in that script, `internal` if shared inside the build module.
 
-When an `@JvmInline value class` wraps a primitive that has a constraint (non-blank, format, range), add `init { require(...) { "message" } }`. Skip it for opaque values with no real constraint (server-generated ids).
+## Collection operations — prefer extension operators over `for` loops
 
-## Nullability and overloads
+For any operation over a collection / `Sequence` / `Iterable` / `Map` / `Flow`, prefer the standard-library extension operator over an imperative `for` loop. The operator name documents intent; a `for` body with `if`/`add`/`continue` hides it.
 
-A nullable parameter or receiver on an extension/top-level function is a design smell: handle the absent case at the call site (`?.`) or provide an overload. Prefer overloads over one function with many nullable/default parameters when the variants behave differently.
+Common mappings:
 
-## Multiplatform source sets
+- Filter → `filter` / `filterNot` / `filterIsInstance` / `filterNotNull`.
+- Transform → `map` / `mapNotNull` / `mapIndexed` / `flatMap`.
+- Aggregate → `sumOf` / `count` / `maxByOrNull` / `minByOrNull` / `fold` / `reduce`.
+- Group / index → `groupBy` / `associateBy` / `associateWith`.
+- Search → `find` / `firstOrNull` / `any` / `all` / `none`.
+- Side effect over each element → `forEach` / `onEach` (use `onEach` when chaining).
+- Build a collection step-by-step → `buildList` / `buildSet` / `buildMap`.
 
-- No `android.*`, `java.*`, `javax.*`, `dalvik.*` imports in `commonMain`; only stdlib and multiplatform-capable libraries.
-- `expect`/`actual` only for platform implementation details; business logic stays in `commonMain`.
-- Prefer `kotlinx.*` (`datetime`, `serialization`, `coroutines`) over JVM-only equivalents there.
+### When `for` is the right choice
 
-## Layering (Clean Architecture + MVI)
+Keep a `for` loop when **any** of these hold — the operator form would be worse:
 
-- A use case has a single responsibility and one public `operator fun invoke()` (or the project's convention).
-- Repository interfaces live in the domain layer, implementations in the data layer.
-- Domain models have no framework dependencies (exceptions: `kotlinx.coroutines`, `kotlinx.datetime`, `kotlinx.serialization` annotations).
-- Mapping is done by explicit mapper functions/classes, never inside data classes. Data-layer types (DTOs, entities) never cross a repository interface: map to domain models at the boundary.
-- Lifecycle-bound scopes (`viewModelScope`, `lifecycleScope`) belong to the presentation layer only, not to use cases or repositories.
+- Early `return` from the enclosing function based on the loop body (cannot inline-return from `forEach` without `return@label` gymnastics).
+- Multiple side effects per iteration that don't compose into a single transformation (e.g. logging + mutating two unrelated structures + checking cancellation).
+- Index-and-neighbor access where `zipWithNext` / `windowed` would be less clear than direct `for (i in indices)`.
+- Performance-critical hot path where allocation of intermediate collections is measurable — prefer `Sequence` / `asSequence()` first; drop to `for` only when profiled.
+
+When in doubt, write the operator chain. If it ends up needing more than three operators or a `let`-tower, reconsider — but don't fall back to `for` mechanically.
+
+## Named arguments — required for ambiguous calls
+
+Use named arguments when **any** of the following hold:
+
+- The argument is a **primitive type** (`Boolean`, `Int`, `Long`, `String`, etc.) and its meaning is not obvious from the call site alone.
+- **Multiple parameters share the same type** — name every argument of that type. Other arguments in the same call may stay positional unless they fall under another rule.
+- A **lone boolean literal** is the worst offender — `setVisible(true)` tells the reader nothing. Name it even when it is the only argument: `setVisible(visible = true)`.
+
+```kotlin
+// Bad — three Strings, meaning unclear
+createUser("Alice", "alice@example.com", "password123")
+
+// Good — same-type args named; positional allowed only when unambiguous
+createUser(name = "Alice", email = "alice@example.com", password = "password123")
+
+// Bad — Boolean argument with no context
+setRetry(true, 3)
+
+// Good
+setRetry(enabled = true, maxAttempts = 3)
+```
+
+### When positional is fine
+
+- Non-primitive, domain-typed argument whose type already documents the meaning: `show(dialog)`, `navigate(destination)`.
+- Single-argument call where the function name makes the argument obvious: `listOf(items)`, `println(message)`, `delay(500)`. A lone **boolean** literal is never exempt — see above.
+- Well-known stdlib/operator-style calls: `maxOf(a, b)`, `Pair(key, value)`.
+
+The test: a reader who sees only the call site — not the function signature — must be able to infer what each argument means without guessing.
+
+## Empty blocks — delete the call
+
+If a call ends with an empty `{}` block and the call exists only to satisfy a signature, delete it. An empty lambda / `apply {}` / `run {}` / `also {}` / `let {}` / `forEach {}` carries no behaviour and obscures the fact that nothing happens.
+
+### How to apply
+
+- `something.apply {}` / `something.also {}` / `something.run {}` / `something.let {}` with empty body → delete the whole expression (or replace with the receiver if the value is used).
+- `forEach {}` / `onEach {}` with empty body → delete; the chain has no side effect to perform.
+- Empty `init {}` block in a class → delete.
+- Empty `catch (e: X) {}` — **not covered by this rule**: silently swallowing exceptions is a separate concern (see error-handling). Either log/handle or remove the `try` entirely.
+- Empty body required by an interface / abstract method override → keep, but add a one-line comment stating why nothing is done (`// no-op: <reason>`). Without the comment a reader cannot tell intentional from forgotten.
+- Empty lambda passed as a default-callback argument (`onClick = {}`) — keep only if the API requires non-null; prefer `null` + nullable type when the API allows it.
+
+The rule is about **calls that do nothing and mean nothing**. If the empty block expresses an intentional no-op at an API boundary, it stays — with a comment.
+
+## Value Class Validation
+
+Wrapping a primitive in `@JvmInline value class` is the obvious part. The non-obvious part: **add `init { require(...) }` when the wrapper enforces a constraint** — non-blank, valid format, range. The model often skips this without a reminder.
+
+```kotlin
+@JvmInline
+value class Email(val value: String) {
+    init { require("@" in value) { "Invalid email: $value" } }
+}
+
+@JvmInline
+value class FavoriteId(val value: String) {
+    init { require(value.isNotBlank()) { "FavoriteId must not be blank" } }
+}
+```
+
+If the wrapped value has no real constraint (e.g. opaque server-generated ID) — skip the `init` block. Validate where validation is meaningful, not as ceremony.
+
+## Parameter Nullability and Overloads
+
+A nullable parameter on an extension or top-level function is a **design smell**. It usually means the responsibility for handling the absent case belongs one level up, at the call site.
+
+- Extension and top-level functions take non-nullable receivers and parameters whenever possible — `fun String.parse()` not `fun String?.parse()`
+- If a caller may have a nullable value, provide an overload or let the caller use `?.` at the call site
+- Prefer overloads over a single function with nullable/default parameters when the two variants have meaningfully different behaviour — Kotlin overloads are idiomatic and cheap
+
+## KMP / commonMain
+
+- No imports from `android.*`, `java.*`, `javax.*`, `dalvik.*` in `commonMain`
+- Only Kotlin stdlib and KMP-compatible libraries in `commonMain`
+- `expect/actual` only for platform-specific implementation details — business logic belongs in `commonMain`
+- Prefer `kotlinx.*` equivalents over JVM-only alternatives (e.g., `kotlinx.datetime` over `java.time`, `kotlinx.serialization` over Gson/Moshi)
+
+## Architecture (Clean Architecture + MVI)
+
+- UseCases are single-responsibility: one public `operator fun invoke()` (or project's chosen convention)
+- Repository **interfaces** live in the domain layer; **implementations** live in the data layer
+- Domain models / entities have **no framework dependencies** (exception: `kotlinx.coroutines`, `kotlinx.datetime`, `kotlinx.serialization` annotations)
+- Mappers are explicit functions or classes — never put mapping logic inside data classes
+- Never expose data-layer types (DTOs, Entities) through repository interfaces — always map to domain models at the layer boundary
+- `viewModelScope` / `lifecycleScope` belong in the Android presentation layer only — not in UseCases or Repositories

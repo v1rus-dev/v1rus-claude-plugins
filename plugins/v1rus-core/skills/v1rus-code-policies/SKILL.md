@@ -1,13 +1,54 @@
 ---
 name: v1rus-code-policies
-description: |-
-  Code policies: mandatory inline comments (preserved migration behavior, retained quirks, non-obvious constraints, implicit semantic changes), doc updates, feature-flag and config rules, breaking changes, architectural-decision handling, legacy code and minimal-diff discipline.
-  Load when modifying existing code, migrating behavior, touching legacy code, or unsure whether to refactor or add a flag.
-  Do NOT use for: logging (v1rus-logging) or dependency changes (v1rus-dependencies).
+description: "v1rus rules for how code is documented and evolved: which non-obvious situations require a mandatory inline comment (behaviour preserved from a migration, an intentionally retained quirk, an external-contract constraint, an implicit semantic change), keeping KDoc and docs in sync with the code, feature flags and configuration, breaking changes, how to pick between competing architectural approaches, and how to treat legacy code. Load when writing or modifying code, when tempted to add a feature flag, or when touching a legacy pattern."
 ---
 
-# v1rus code policies
+# Code Policies
 
-Rulebook (also injected on the first source-file edit of a session): `${CLAUDE_PLUGIN_ROOT}/rules/code-policies.md`
+## Code clarity and documentation
 
-Key habits: minimal diff, comment the surprising fact, update docs with code, no proactive feature flags, notify before public-API/schema/CLI breaking changes.
+When code is modified, update directly related docs — KDoc, inline comments, `.md` files. Never leave docs describing something the code no longer does.
+
+### Mandatory inline comments
+
+Add a short comment whenever the code contains:
+
+- **Preserved behavior from a migration** — old API used system default timezone, new API could use UTC but intentionally doesn't; old code had no null-check and callers rely on that. Comment: what the old code did and why the new matches it.
+- **Intentionally retained bug or quirk** — known incorrect/surprising behavior kept for compat, spec compliance, or because fixing it would break something else. Comment: what the bug is, why it's kept.
+- **Non-obvious constraint** — code looks wrong but is correct due to an external contract, hardware quirk, server format, third-party library, or platform limitation.
+- **Implicit semantic change** — logic appears equivalent but subtly differs in edge cases (overflow, timezone, locale, rounding, encoding). Comment: what differs and why it's acceptable.
+
+Format: one or two lines, lead with the surprising fact, follow with the reason. No need to reference the task or PR.
+
+## Logging
+
+All logging policy lives in the `v1rus-logging` skill — single source. It covers permanent vs temporary diagnostic logs, the `// TEMP-LOG` convention, the mandatory logger system, per-level semantics, and redaction. Nothing about logging (incl. `// TEMP-LOG`) is duplicated here.
+
+## Feature flags and configuration
+
+- **Feature flags:** never add proactively — that's a product decision. If the task clearly implies a flag, ask first.
+- **Configuration:** follow the project's existing pattern. If none — put config in a dedicated config layer, no hardcoded values.
+
+## Breaking changes
+
+Make the change directly. Backward compatibility and migration are the user's responsibility unless asked. For public API, DB schema, or CLI interface — notify the user before proceeding.
+
+## Architectural decisions
+
+When a task allows multiple approaches:
+1. Check existing project patterns — match if clear.
+2. No clear pattern → present options with trade-offs, recommend with reasoning, then proceed.
+3. No signal at all → apply best practices and project settings as default.
+
+Never silently pick an approach when alternatives exist.
+
+## Legacy code
+
+Do not change code outside the scope of the current task unless it's a direct blocker.
+
+When the task touches legacy code:
+- Legacy pattern works and doesn't conflict → keep it, note in one line.
+- Adding new code nearby → prefer current project standard, not legacy style.
+- Legacy pattern actively blocks the task or mixing styles creates inconsistency → refactor as part of the task and explain why.
+
+Threshold: does leaving it as-is make the result worse or harder to maintain?

@@ -19,7 +19,7 @@ Analyze a feature from its specification, design, or implementation and produce 
 prioritized test plan as a markdown document. No tests are executed — the output is a plan ready
 for `write-tests` / an engineer to implement as unit / integration tests later.
 
-**Scope:** plans **L2 unit / integration tests only** (no device). Instrumented UI, screenshot/visual, E2E, and manual runtime testing are out of scope — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` § Verification pyramid.
+**Scope:** plans **L2 unit / integration tests only** (no device). Instrumented UI, screenshot/visual, E2E, and manual runtime testing are out of scope — see the `v1rus-qa` skill § Verification pyramid.
 
 ## Output
 
@@ -30,7 +30,7 @@ docs/testplans/<slug>-test-plan.md
 ```
 
 Create the `docs/testplans/` directory if it doesn't exist. The slug is the canonical
-filename anchor — the acceptance gate mounts by exact slug match, so the filename must be
+filename anchor — `acceptance` mounts by exact slug match, so the filename must be
 slug-based regardless of invocation mode.
 
 Slug resolution rules (apply in order):
@@ -50,7 +50,7 @@ The resulting filename is then `docs/testplans/<slug>-test-plan.md` (for example
 ### Receipt (when invoked with a slug)
 
 When invoked with a `slug` argument, also emit a receipt at
-`swarm-report/<slug>-test-plan.md` so `multiexpert-review` and the acceptance gate can mount
+`swarm-report/<slug>-test-plan.md` so `multiexpert-review` and `acceptance` can mount
 the artifact via receipt-based gating. The permanent file remains the source of truth;
 the receipt is metadata + pointer. Standalone invocations (no slug passed) skip the
 receipt entirely and write only the canonical `docs/testplans/<slug>-test-plan.md` file.
@@ -64,11 +64,11 @@ rules.
 
 Sources may be a text spec (PRD / AC / user story) or existing code — often a combination. Cross-reference them; flag spec/code discrepancies as a finding, mark behaviour inferred from code alone with `[inferred from code]`.
 
-**Spec frontmatter.** When the source is a file with YAML frontmatter and contains a `platform:` list, copy it verbatim into the receipt's `platform:` field (canonical values: `android | ios | web | desktop | backend-jvm | backend-node | cli | library | generic`, same as `write-spec`). Otherwise leave `platform:` empty in the receipt — the acceptance gate falls back to its project-type heuristic.
+**Spec frontmatter.** When the source is a file with YAML frontmatter and contains a `platform:` list, copy it verbatim into the receipt's `platform:` field (canonical values: `android | ios | web | desktop | backend-jvm | backend-node | cli | library | generic`, same as `write-spec`). Otherwise leave `platform:` empty in the receipt — `acceptance` falls back to its project-type heuristic.
 
 ### Test-plan shape
 
-Plans describe pure-logic / API behaviour — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` § 3. Produce TCs whose behaviour is fully captured by Given/When/Then — focus on input validation, state transitions, and error paths.
+Plans describe pure-logic / API behaviour — see the `v1rus-qa` skill § 3. Produce TCs whose behaviour is fully captured by Given/When/Then — focus on input validation, state transitions, and error paths.
 
 ## Test Plan Format
 
@@ -120,7 +120,7 @@ This heuristic is the canonical reference for picking a TC type within this plug
 
 ### Priority
 
-Priority framework — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` § 2.
+Priority framework — see the `v1rus-qa` skill § 2.
 
 ### Tier
 

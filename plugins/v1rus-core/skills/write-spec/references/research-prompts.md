@@ -1,11 +1,13 @@
+Referenced from: `plugins/developer-workflow/skills/write-spec/SKILL.md` (§Phase 1.1 Launch research consortium).
+
 > **Intentional overlap with the `research` skill.** The Codebase / Architecture prompts below
 > are an enriched **superset** of the ones in `../../research/references/expert-prompts.md` (here
 > they add integration-points and test-infra, plus the spec-only Business Analyst / Critical
 > Evaluation / Dependency Chain tracks). The two files are kept separate **on purpose** — each
 > skill stays self-contained per the toolbox model — so do not collapse them into one shared
-> file. This mirrors the acceptance-gate ↔ `multiexpert-review` "same protocol, duplicated with a
+> file. This mirrors the `acceptance` ↔ `multiexpert-review` "same protocol, duplicated with a
 > note" idiom. **Web Research is the exception**: both skills route it through the shared
-> `source-researcher` agent + `${CLAUDE_PLUGIN_ROOT}/skills/v1rus-sources/reference/sources.md`, so that method is genuinely shared,
+> `source-researcher` agent + the `v1rus-sources` skill, so that method is genuinely shared,
 > not duplicated. (Note: the spec-only **Dependency Chain** track maps infrastructure
 > prerequisites — APIs, permissions, console setup — and is *not* the research skill's
 > version/CVE "Dependencies" track; it stays on general-purpose.)
@@ -60,14 +62,14 @@ integration, or unfamiliar domain.
 
 Run on the **`source-researcher`** agent (`focus: web`) — it discovers the tools/MCP actually
 reachable at runtime and queries every relevant channel, per the single method in
-`${CLAUDE_PLUGIN_ROOT}/skills/v1rus-sources/reference/sources.md` § *Tool discovery & multi-channel use* (inherited by the agent, not
+the `v1rus-sources` skill § *Tool discovery & multi-channel use* (inherited by the agent, not
 restated here). Model/effort pinned in the agent (`sonnet` / `medium`). It gathers and reports
 without synthesizing — the spec author merges.
 
 ```
 focus: web
 topic: {feature goal}
-constraints: {platform and any known boundaries}
+constraints: {platform — Android/iOS/KMP — and any known boundaries}
 
 Investigate best practices and implementation approaches for this feature: common approaches
 with trade-offs, known pitfalls, relevant libraries/standards, real-world open-source examples,

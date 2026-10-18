@@ -1,3 +1,47 @@
 #!/bin/sh
-# Enable once per clone: git config core.hooksPath .githooks
-exec python3 "$(git rev-parse --show-toplevel)/scripts/check-plugins.py" --staged
+# Pre-commit for the v1rus plugin marketplace.
+#
+# Main job: block a commit that changes a plugin without bumping its version.
+# `version` in plugin.json pins the plugin: without a bump the change silently never
+# reaches installed copies. Code review cannot catch this, so the hook does.
+#
+# Enable once per clone:
+#     git config core.hooksPath .githooks
+
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-commit: python3 not found - plugin checks skipped." >&2
+    echo "Install python3: the hooks of this repo and of v1rus-core do not work without it." >&2
+    exit 0
+fi
+
+python3 "$ROOT/scripts/check-plugins.py" --staged || exit 1
+
+# Official validator for the changed plugins, when the CLI is available.
+if command -v claude >/dev/null 2>&1; then
+    CHANGED=$(git diff --cached --name-only --diff-filter=ACMR \
+        | awk -F/ '$1=="plugins" && NF>1 {print $2}' | sort -u)
+    for plugin in $CHANGED; do
+        [ -d "$ROOT/plugins/$plugin" ] || continue
+        if ! claude plugin validate "$ROOT/plugins/$plugin" --strict >/dev/null 2>&1; then
+            echo "" >&2
+            echo "claude plugin validate --strict failed for $plugin:" >&2
+            claude plugin validate "$ROOT/plugins/$plugin" --strict >&2 || true
+            exit 1
+        fi
+    done
+    if [ -n "$(git diff --cached --name-only -- .claude-plugin/marketplace.json)" ]; then
+        if ! claude plugin validate "$ROOT" --strict >/dev/null 2>&1; then
+            echo "" >&2
+            echo "claude plugin validate --strict failed for marketplace.json:" >&2
+            claude plugin validate "$ROOT" --strict >&2 || true
+            exit 1
+        fi
+    fi
+    echo "  - claude plugin validate --strict: ok"
+else
+    echo "  - claude CLI not found - official validator skipped"
+fi

@@ -1,10 +1,20 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "v1rus-typescript",
-  "version": "1.1.1",
-  "description": "JavaScript and TypeScript rules, skills and agents: types, boundaries, async, tooling, testing, supply chain.",
+  "displayName": "v1rus TypeScript",
+  "version": "2.0.0",
+  "description": "The TypeScript language and toolchain layer shared by every v1rus TypeScript project, backend and web alike: tsconfig strictness beyond `strict` plus ESM and module resolution, type modelling that makes illegal states unrepresentable (discriminated unions, exhaustive switches with a never guard, satisfies, branded ids, generics that earn their place), runtime schema validation at every I/O boundary because a type from JSON.parse is a lie, Error subclasses with cause and the Result-versus-throw line, floating promises and concurrency and AbortSignal propagation, package exports maps and the real cost of barrel files, and a type-aware ESLint flat-config gate with reasoned disables.",
   "author": {
-    "name": "v1rus-dev"
+    "name": "v1rus"
   },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "typescript",
+    "eslint",
+    "esm",
+    "type-safety"
+  ],
   "dependencies": [
     "v1rus-core"
   ]

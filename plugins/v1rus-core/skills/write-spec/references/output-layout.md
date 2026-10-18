@@ -1,3 +1,5 @@
+Referenced from: `plugins/developer-workflow/skills/write-spec/SKILL.md` (§Phase 5 Save).
+
 # Output Location and Artifact Layout
 
 Where the spec and the operational state file live, how they are named, and

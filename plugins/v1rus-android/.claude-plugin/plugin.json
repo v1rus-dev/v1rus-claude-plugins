@@ -1,10 +1,20 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "v1rus-android",
-  "version": "1.1.1",
-  "description": "Android platform rules, skills and agents.",
+  "displayName": "v1rus Android",
+  "version": "2.0.0",
+  "description": "Native-Android layer for v1rus: the Gradle module graph of an Android app (app / feature / core / designsystem) without multiplatform source sets, the Android data layer (Room with a context-bound builder, Ktor on OkHttp with bearer refresh, DataStore), Android test conventions (src/test versus src/androidTest, JUnit with handwritten fakes, Robolectric and Compose test rules), manifest and permission discipline, and the android-pipeline-profile that binds the stack-agnostic feature pipeline to an Android project, plus the test-runner agent. Compose UI, MVI and performance rules come from v1rus-compose.",
   "author": {
-    "name": "v1rus-dev"
+    "name": "v1rus"
   },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "android",
+    "jetpack-compose",
+    "gradle",
+    "room"
+  ],
   "dependencies": [
     "v1rus-compose"
   ]

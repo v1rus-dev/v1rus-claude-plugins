@@ -7,6 +7,6 @@ description: |-
 
 # Plain JS with checkJs
 
-1. Add a `tsconfig.json` per `${CLAUDE_PLUGIN_ROOT}/rules/ts-config.md` (plain-JS variant) and run `tsc` as the gate. Prefer a tsconfig file over CLI flags.
+1. Add a `tsconfig.json` per the `ts-project-config` skill (plain-JS variant) and run `tsc` as the gate. Prefer a tsconfig file over CLI flags.
 2. JSDoc style, TypeScript 7 JSDoc restrictions, migration criteria: `${CLAUDE_PLUGIN_ROOT}/skills/ts-checkjs/reference/jsdoc.md`.
-3. Apply `${CLAUDE_PLUGIN_ROOT}/rules/ts-types.md` and `ts-boundaries.md` (they also match `.js/.mjs/.cjs`).
+3. Apply the `typescript-conventions`, `ts-type-modelling` and `ts-boundaries-validation` skills; the `typescript.md` rule matches only TS files, so load them explicitly for `.js/.mjs/.cjs`.

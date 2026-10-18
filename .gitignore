@@ -1,2 +1,26 @@
+# Only conventions belong in this repo. Anything that could be a secret is blocked here
+# mechanically so a careless `git add .` cannot leak it.
+
+# secrets and credentials
+.env
+.env.*
+*.pem
+*.p12
+*.jks
+*.keystore
+local.properties
+credentials.json
+google-services.json
+GoogleService-Info.plist
+id_rsa
+id_ed25519
+secrets/
+
+# local Claude Code settings (may contain MCP server tokens)
+.claude/settings.local.json
+.mcp.json
+
+# misc
+.DS_Store
 __pycache__/
 *.pyc

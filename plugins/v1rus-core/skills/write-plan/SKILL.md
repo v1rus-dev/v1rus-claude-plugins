@@ -124,7 +124,7 @@ fill every placeholder. Shape:
 - **`plan.md`** — YAML frontmatter (`type: plan`, `slug`, `date`, `status: draft`, `spec:` link or
   `none`, `risk_areas`, `review_verdict: pending`) + body: Context & Decision, Technical Approach,
   Affected Modules & Files (table: path · change type · note), Decisions Made (with rationale),
-  a **Dependencies** block (only when the change adds or bumps a dependency — the `dependencies.md`
+  a **Dependencies** block (only when the change adds or bumps a dependency — the the `v1rus-dependencies` skill
   plan-stage gate), Risks & Mitigations, **Verification & Sources**, Out of Scope, Open Questions
   (tagged blocking / non-blocking). The **Verification & Sources** section is mandatory and must name
   the source(s) of truth that define "done" (spec / test-plan / before-state baseline / Figma /
@@ -228,7 +228,8 @@ On `review_verdict: escalate`, do not flip to `approved`. Retire (delete) the st
 
 Keep `progress.md` as the live execution ledger: as each `T-N` completes, check its box and append a
 one-line learning. Suggest the next step (implement the tasks; then `/write-tests`, `/check`,
-`/finalize`, the acceptance gate). The main session may dispatch each task to a specialist subagent to implement, if the project's instructions ask for that split.
+`/finalize`, `/acceptance`). Per the orchestrator model (global `CLAUDE.md`), the main session
+dispatches each task to a specialist subagent to implement — it does not edit product code itself.
 
 See [`references/output-layout.md`](references/output-layout.md) for path conventions, the
 confirmation message, gitignore notes, and the hand-off rules (do-not-auto-invoke, the toolbox model,

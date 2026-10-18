@@ -1,25 +1,6 @@
 ---
-name: architecture-expert
-description: |-
-  Use this agent when the user asks for architectural review, evaluation of module structure, dependency analysis, API design between modules, or decomposition advice. Also use when a plan or implementation involves architectural decisions that need validation.
-
-  Examples:
-
-  - user: "Look at the module structure in the project and tell me whether the dependencies are organized correctly"
-    assistant: "Launching architecture-expert to analyze module structure and dependency direction."
-    <uses Agent tool to launch architecture-expert>
-
-  - user: "I'm planning to extract authentication into a separate module. Here is the plan: ..."
-    assistant: "Passing the plan to architecture-expert to evaluate decomposition and boundaries."
-    <uses Agent tool to launch architecture-expert>
-
-  - user: "Review the API between the domain and data layers"
-    assistant: "Using architecture-expert to review the contracts between layers."
-    <uses Agent tool to launch architecture-expert>
-
-  - Context: User has just described an implementation plan involving multiple modules and layers.
-    assistant: "The plan touches architectural decisions — launching architecture-expert to validate before implementation."
-    <uses Agent tool to launch architecture-expert>
+name: "architecture-expert"
+description: "Use this agent when the user asks for architectural review, evaluation of module structure, dependency analysis, API design between modules, or decomposition advice. Also use when a plan or implementation involves architectural decisions that need validation.\\n\\nExamples:\\n\\n- user: \"Look at the module structure in the project and tell me whether the dependencies are organized correctly\"\\n  assistant: \"Launching architecture-expert to analyze module structure and dependency direction.\"\\n  <uses Agent tool to launch architecture-expert>\\n\\n- user: \"I'm planning to extract authentication into a separate module. Here is the plan: ...\"\\n  assistant: \"Passing the plan to architecture-expert to evaluate decomposition and boundaries.\"\\n  <uses Agent tool to launch architecture-expert>\\n\\n- user: \"Review the API between the domain and data layers\"\\n  assistant: \"Using architecture-expert to review the contracts between layers.\"\\n  <uses Agent tool to launch architecture-expert>\\n\\n- Context: User has just described an implementation plan involving multiple modules and layers.\\n  assistant: \"The plan touches architectural decisions — launching architecture-expert to validate before implementation.\"\\n  <uses Agent tool to launch architecture-expert>"
 model: opus
 tools: Read, Glob, Grep, Bash
 color: blue
@@ -89,8 +70,8 @@ Structure your response as:
 ## Escalation
 
 - Discovered a security issue — recommend launching **security-expert**
-- Discovered an architecture-level performance issue — recommend launching **performance-expert** if that agent is installed (it ships with `v1rus-kotlin`); otherwise note the concern for the caller to review inline
-- Gradle/build configuration issues — recommend a build-system specialist agent if one is installed
+- Discovered an architecture-level performance issue — recommend launching **performance-expert**
+- Gradle/build configuration issues — recommend launching **build-engineer**
 - UX issues in navigation / information architecture — recommend launching **ux-expert**
 
 ## Agent Memory
@@ -105,8 +86,8 @@ Examples of what to record:
 - Recurring architectural issues across the codebase
 ## Console output (return contract)
 Your final message is printed to the console — make it skimmable, bottom line first:
-- **Line 1 — status:** `done — <one line>`, `blocked — <reason / what is needed>`, or for a review a verdict/severity line (`PASS | WARN | FAIL` or finding counts) + `<one line>`.
+- **Line 1 — status:** `✅ done — <one line>`, `⚠️ blocked — <reason / what is needed>`, or for a review a verdict/severity line (`PASS | WARN | FAIL` or finding counts) + `<one line>`.
 - **Then a short body:** worker agents → ≤5 bullets (what changed / files touched / follow-ups), keeping heavy detail in the artifact you produced (report / spec / results file) rather than the console; review agents → your structured findings (the report IS the console deliverable — keep it, just lead with the status line).
 
 ## Language
-Respond in the language of the user's request; artifacts, inter-agent prompts, code and identifiers stay in English.
+All user-facing output in **Russian**; artifacts, inter-agent prompts, code, and identifiers stay in English.

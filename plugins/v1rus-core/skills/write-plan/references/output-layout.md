@@ -37,7 +37,7 @@ before flipping to `approved`.
 ## Hand-off rules
 
 - Do **not** auto-invoke downstream skills. Suggest the next step (implement the tasks; then
-  `/write-tests`, `/check`, `/finalize`, `test-runner`) and let the user/agent drive — toolbox
+  `/write-tests`, `/check`, `/finalize`, `/acceptance`) and let the user/agent drive — toolbox
   model. (The mandatory Phase 3 inline `multiexpert-review` call and the Phase 3.5 adversarial
   red-team Agent call are the review gate built into this skill, not downstream chains — these are
   the sanctioned in-skill invocations.)

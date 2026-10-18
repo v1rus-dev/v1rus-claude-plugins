@@ -1,8 +1,18 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "v1rus-core",
-  "version": "1.1.1",
-  "description": "Baseline charter, workflow gates, shared review/research agents and skills, and the rules engine for all v1rus plugins.",
+  "displayName": "v1rus Core",
+  "version": "2.0.0",
+  "description": "Corporate baseline for v1rus: communication style, non-negotiable engineering rules, the mandatory quality/acceptance gate discipline, testing strategy by complexity band, source-trust tiers, and the stack-agnostic review agents and planning skills every v1rus project shares.",
   "author": {
-    "name": "v1rus-dev"
-  }
+    "name": "v1rus"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "conventions",
+    "workflow",
+    "code-review",
+    "qa"
+  ]
 }

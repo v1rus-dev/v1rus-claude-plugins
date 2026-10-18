@@ -26,9 +26,9 @@ Source: `plugins-reference` (redirects to the manifest reference) https://code.c
 - Components page: "Claude Code doesn't load a `CLAUDE.md` at the plugin root" (warning text: `CLAUDE.md at the plugin root is not loaded as project context`).
 - No `rules/` component exists in the plugin layout. `.claude/rules/*.md` with `paths:` frontmatter (https://code.claude.com/docs/en/memory#path-specific-rules) is a project/user-level feature; the docs do not say plugins can contribute to it.
 - Closest official features: (a) skills — name+description always in context, body loads on use; `paths:` makes a skill auto-activate only for matching files (activation hint, not forced injection); (b) hooks that return `additionalContext`.
-- Conclusion: always-on charter and path-scoped rule injection need hooks. See `plugins/v1rus-core/hooks/v1rus_rules.py`.
+- Conclusion: always-on charter and path-scoped rule injection need hooks. See `plugins/v1rus-core/hooks/inject-charter.py` and `hooks/path-rules.py`.
 
-## Hooks facts used by the engine
+## Hooks facts used by the hooks
 
 Source: https://code.claude.com/docs/en/hooks
 - SessionStart stdin: `session_id`, `cwd`, `hook_event_name`, `source` (`startup|resume|clear|compact|fork`). Output `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}` puts text at the start of the conversation. Plain stdout with exit 0 is also added as context.
@@ -41,15 +41,15 @@ Source: https://code.claude.com/docs/en/hooks
 
 Source: https://code.claude.com/docs/en/hooks (Common input fields), fetched 2026-10-18.
 - `agent_id` ("Unique identifier for the subagent or in-process teammate the hook fires in") and `agent_type` are common input fields. PreToolUse/PostToolUse fire inside subagents with the same configured hooks, and the input carries `agent_id`/`agent_type`. Absent in the main conversation (unless `--agent`, which sets only `agent_type`).
-- The docs do not say whether a subagent shares the parent `session_id`; the engine does not rely on it either way.
-- Engine choice: once-per-session dedup state is keyed by `session_id` + `agent_id` when present, so every subagent (own context) receives each rule once on its own first matching edit. SessionStart (non-resume) clears the main state and all `<session>__agent_*` states. Empty `session_id` = no dedup (rules inject on every match) instead of a shared persistent state.
+- The docs do not say whether a subagent shares the parent `session_id`; the hooks do not rely on it either way.
+- `path-rules.py` keeps once-per-session dedup state keyed by `session_id` only (not `agent_id`), and `PreCompact` clears it; a subagent that shares the session therefore does not receive a rule the main conversation already got.
 - Not verified: that PreToolUse `additionalContext` lands in the subagent's own context (docs imply the agent whose call fired the hook, not stated explicitly).
 
-## Path-scoped rule semantics (mirrored by the engine)
+## Path-scoped rule semantics (as implemented by `path-rules.py`)
 
 Source: https://code.claude.com/docs/en/memory#path-specific-rules
-- `paths` accepts a YAML list or comma-separated string; globs like `**/*.ts`, `src/**/*`, `*.md` (root only); brace expansion `{ts,tsx}`.
-- Only Read/Write/Edit (and single-file Bash reads) trigger native path rules. The v1rus engine triggers on Write/Edit/MultiEdit/NotebookEdit only (PreToolUse), by design.
+- `paths` accepts a YAML list or comma-separated string; globs like `**/*.ts`, `src/**/*`, `*.md` (root only); brace expansion `{ts,tsx}` (not implemented by `path-rules.py`: one glob per line).
+- Only Read/Write/Edit (and single-file Bash reads) trigger native path rules. `path-rules.py` triggers on Write/Edit/MultiEdit only (PreToolUse), by design.
 
 ## Manifest, marketplace, dependencies
 
@@ -68,8 +68,8 @@ Sources: manifest-reference, https://code.claude.com/docs/en/plugins/marketplace
 
 ## Not verified
 
-- End-to-end behaviour of the hook engine inside a live Claude Code session (hooks were tested by piping JSON on stdin and by `claude plugin validate`, not in an interactive session).
+- End-to-end behaviour of the hooks inside a live Claude Code session (hooks were tested by piping JSON on stdin and by `claude plugin validate`, not in an interactive session).
 - Whether `additionalContext` from PreToolUse is shown to the model before or after the edit executes (docs say "next to the tool result").
 - Exact Write/Edit `tool_input` schema (truncated in fetched docs); `file_path` is assumed from doc examples, `notebook_path` for NotebookEdit from tool conventions.
 - Behaviour of several enabled plugins each injecting `additionalContext` for the same PreToolUse event (assumed concatenated).
-- Whether `claude plugin install` of a marketplace entry with relative path copies only the plugin directory (assumed; engine does not depend on it).
+- Whether `claude plugin install` of a marketplace entry with relative path copies only the plugin directory (assumed; the hooks do not depend on it).

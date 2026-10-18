@@ -1,10 +1,20 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "v1rus-kotlin",
-  "version": "1.1.1",
-  "description": "Kotlin/JVM/KMP rules, skills and agents.",
+  "displayName": "v1rus Kotlin & Gradle",
+  "version": "2.0.0",
+  "description": "Kotlin, JVM and Gradle layer shared by every v1rus Kotlin project: visibility and collection-operator discipline, coroutine/Flow rules a model gets wrong by default, Gradle api-vs-implementation and version-catalog conventions, JVM dependency vetting, plus the kotlin-engineer, build-engineer and performance-expert agents.",
   "author": {
-    "name": "v1rus-dev"
+    "name": "v1rus"
   },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "kotlin",
+    "gradle",
+    "jvm",
+    "coroutines"
+  ],
   "dependencies": [
     "v1rus-core"
   ]

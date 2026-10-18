@@ -1,3 +1,5 @@
+Referenced from: `plugins/developer-workflow/skills/write-spec/SKILL.md` (§Phase 3 Write Spec Draft).
+
 # Spec Draft Template
 
 ```markdown
@@ -6,13 +8,13 @@ type: spec
 slug: {slug}
 date: {YYYY-MM-DD}
 status: draft
-# Optional fields — leave blank when not applicable. Consumed by the acceptance gate
+# Optional fields — leave blank when not applicable. Consumed by `acceptance`
 # (choreography) and by `generate-test-plan` (platform-aware coverage).
 platform: []                     # Canonical values: [android], [ios], [web], [desktop], [backend-jvm], [backend-node], [cli], [library], [generic]. May be multi-value for cross-platform features.
 surfaces: []                     # e.g. [ui], [api], [cli], [background-job]. Drives which acceptance checks run.
 risk_areas: []                   # e.g. [auth], [payment], [pii], [data-migration], [perf-critical]. Each entry triggers a conditional expert in acceptance.
 non_functional:                  # Optional block. Each present entry triggers an expert check.
-  sla:                           # e.g. p99 < 150ms. Triggers performance-expert if installed (else covered inline).
+  sla:                           # e.g. p99 < 150ms. Triggers performance-expert.
   a11y:                          # e.g. wcag-aa. Triggers ux-expert a11y mode.
 acceptance_criteria_ids: []      # e.g. [AC-1, AC-2, AC-3]. Each AC in the list MUST appear as a bullet in §Acceptance Criteria.
 design:                          # Optional.
@@ -38,7 +40,7 @@ Write the "why" that will still make sense in 6 months.}
 The feature is complete when ALL of the following are true. Each criterion is assigned a
 stable `AC-N` id. The frontmatter `acceptance_criteria_ids` list is **optional** for
 back-compat, but when it is provided, it MUST include every `AC-N` id listed here and nothing
-else; that is what the acceptance gate uses to drive AC-coverage checks via `business-analyst`.
+else; that is what `acceptance` uses to drive AC-coverage checks via `business-analyst`.
 Leaving `acceptance_criteria_ids` empty disables the business-analyst conditional.
 
 - [ ] **AC-1** — {Concrete, observable behavior — not internal state}
@@ -90,7 +92,7 @@ Rules the implementing agent must follow without deviation:
 - {Must NOT add new dependencies without approval}
 - {Must follow Y pattern used elsewhere}
 - {Must support API level Z+}
-- {Must support platform X / must stay platform-agnostic}
+- {Must be KMP-compatible / Android-only}
 - {No blocking operations on the main thread}
 
 ## Decisions Made
