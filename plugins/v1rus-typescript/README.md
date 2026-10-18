@@ -38,7 +38,7 @@ Defaults and semantics of pnpm settings; typescript-eslint plans for TypeScript 
 ## Install
 
 ```
-/plugin marketplace add <path-or-git-url>
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
 /plugin install v1rus-typescript@v1rus-dev
 ```
 

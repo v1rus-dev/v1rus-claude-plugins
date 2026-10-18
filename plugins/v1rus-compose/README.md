@@ -22,7 +22,7 @@ Lossy: the original agent's illustrative skeleton code and the Destination code 
 ## Install
 
 ```
-/plugin marketplace add <path-or-git-url>
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
 /plugin install v1rus-compose@v1rus-dev
 ```
 

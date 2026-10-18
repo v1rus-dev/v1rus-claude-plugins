@@ -50,7 +50,7 @@ Working files (state, reports, plans) go to `swarm-report/` in the target projec
 ## Install
 
 ```
-/plugin marketplace add <path-or-git-url>
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
 /plugin install v1rus-core@v1rus-dev
 ```
 

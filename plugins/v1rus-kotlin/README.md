@@ -23,7 +23,7 @@ Lossy: the original agents' return-contract/language lines and `memory: project`
 ## Install
 
 ```
-/plugin marketplace add <path-or-git-url>
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
 /plugin install v1rus-kotlin@v1rus-dev
 ```
 

@@ -47,7 +47,7 @@ Added by this build:
 ## Install
 
 ```
-/plugin marketplace add <path-or-git-url>
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
 /plugin install v1rus-go@v1rus-dev
 ```
 

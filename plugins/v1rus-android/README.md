@@ -19,7 +19,7 @@ Lossy / unverified: `android` CLI behaviour was copied from the owner's notes, n
 ## Install
 
 ```
-/plugin marketplace add <path-or-git-url>
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
 /plugin install v1rus-android@v1rus-dev
 ```
 

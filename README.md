@@ -4,13 +4,26 @@
 
 ## Установка
 
+Подключить маркетплейс (один раз на машину):
+
 ```
-/plugin marketplace add ~/.claude/v1rus-dev
-# или по git: /plugin marketplace add <git-url-placeholder>
-/plugin install v1rus-android@v1rus-dev      # тянет compose -> kotlin -> core по dependencies
+/plugin marketplace add v1rus-dev/v1rus-claude-plugins
+# или явным URL: /plugin marketplace add git@github.com:v1rus-dev/v1rus-claude-plugins.git
 ```
 
-Для разработки: `claude --plugin-dir plugins/v1rus-core --plugin-dir plugins/v1rus-kotlin`.
+Поставить нужные плагины (зависимости подтянутся сами):
+
+```
+/plugin install v1rus-core@v1rus-dev         # базовый слой: charter, общие агенты и skills
+/plugin install v1rus-android@v1rus-dev      # тянет compose -> kotlin -> core
+/plugin install v1rus-go@v1rus-dev
+/plugin install v1rus-typescript@v1rus-dev
+```
+
+Обновление: `/plugin marketplace update v1rus-dev`, затем `/plugin update <имя>@v1rus-dev`.
+
+Для разработки из локального клона: `claude --plugin-dir plugins/v1rus-core --plugin-dir plugins/v1rus-kotlin`
+или `/plugin marketplace add <путь-к-клону>`.
 
 ## Плагины
 
