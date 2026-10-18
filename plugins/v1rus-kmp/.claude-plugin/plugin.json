@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "v1rus-kmp",
+  "displayName": "v1rus KMP & Compose Multiplatform",
+  "version": "2.1.0",
+  "description": "Kotlin Multiplatform layer for v1rus, on top of the shared Compose layer: commonMain constraints and expect/actual discipline, the KMP module graph and source-set rules, the KMP data layer (Room builder and Ktor HttpClient as expect/actual per platform, bearer-token refresh), commonTest conventions with kotlin.test and handwritten fakes, the kmp-pipeline-profile that binds the feature pipeline to a KMP project, plus the swift-engineer and swiftui-developer agents and the KMP test-runner. Compose UI, MVI, Koin and performance rules come from v1rus-compose.",
+  "author": {
+    "name": "v1rus"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "kmp",
+    "compose-multiplatform",
+    "expect-actual",
+    "ios"
+  ],
+  "dependencies": [
+    "v1rus-compose"
+  ]
+}

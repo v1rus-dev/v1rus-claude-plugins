@@ -15,4 +15,4 @@ Applies to a project whose Gradle files reference an Android plugin (application
 - Building is the project's Gradle; `android run` only deploys an already built APK. Do not hardcode AGP/SDK/build-tools facts from memory: look up AGP and Gradle plugin behaviour in the Android docs for the pinned AGP version.
 - Never run `android init` or `android skills add` on your own: they register skills in routing and duplicate existing ones. Reading bundled skill files is always fine.
 - Never run `android update` automatically: mention a new version once per session and ask first.
-- Adding or bumping AGP, Compose compiler/BOM or any androidx artifact goes through the `gradle-dependency-gate` skill.
+- Adding or bumping AGP, Compose compiler/BOM or any androidx artifact goes through the `v1rus-dependencies` skill (v1rus-core).

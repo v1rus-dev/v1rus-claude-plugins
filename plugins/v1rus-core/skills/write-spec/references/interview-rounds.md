@@ -1,3 +1,5 @@
+Referenced from: `plugins/developer-workflow/skills/write-spec/SKILL.md` (§Phase 2 Interview).
+
 # Interview Rounds — Question Bank, Round Structure, and Per-Round Prompts
 
 Full Phase 2 playbook. SKILL.md holds only the round-loop contract and exit

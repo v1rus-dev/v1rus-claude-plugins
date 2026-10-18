@@ -2,7 +2,7 @@
 
 Reference for `write-tests` Phase 4.2 — see `../SKILL.md` for the skill entry point.
 
-Fill in the `{…}`
+Pick the template that matches the agent you selected in Phase 4.1 and fill in the `{…}`
 placeholders from Phases 1-3. Keep the section headings exactly as written so downstream
 agents can locate the slots reliably.
 
@@ -18,7 +18,7 @@ Every delegation prompt must include:
 6. **Regression scenario** — in Regression Mode only: the structured bug description from
    Phase 1.1 (`regression-scenario` input). Omit or set to "N/A" in normal mode.
 
-## Prompt template
+## Prompt template for kotlin-engineer
 
 ```
 Write unit tests for the following code. Match the project's existing test conventions exactly.
@@ -45,7 +45,7 @@ Read this existing test for style and conventions: {path to example test}
 ## Requirements
 - Write complete, compilable test files — no TODOs, no placeholders
 - Follow the project's existing naming, assertion, and setup conventions exactly
-- Use the same test-double approach as existing tests; do not introduce a new mocking library or framework
+- Use the same mocking approach as existing tests (MockK/Mockito-Kotlin/fakes)
 - Cover happy path, edge cases, and error paths as specified in the test case list
 - Place test files in the correct test source set and package
 - Each test function tests exactly one behavior
@@ -57,3 +57,43 @@ Read this existing test for style and conventions: {path to example test}
 Respond in the same language as the user's request.
 ```
 
+## Prompt template for swift-engineer
+
+```
+Write unit tests for the following Swift code. Match the project's existing test conventions exactly.
+
+## Target code
+Read these files:
+{list of file paths}
+
+## Test Infrastructure
+{Test Infrastructure Summary from Phase 2}
+
+## Regression scenario (Regression Mode only — omit or "N/A" otherwise)
+{regression_scenario: root cause + reproduction steps + expected vs actual behavior}
+
+## Test cases to write
+{list of test cases from Phase 3}
+
+## Style reference
+Read this existing test for style and conventions: {path to example test}
+
+## Test plan (optional)
+{path to test plan from docs/testplans/, or "No test plan available"}
+
+## Requirements
+- Write complete, compilable test files — no TODOs, no placeholders
+- Follow the project's existing naming and structure conventions (Swift Testing `@Test` / `@Suite`
+  vs XCTest `XCTestCase`) — do not mix the two in the same file
+- Use the project's existing test-double approach (protocol-backed fakes, stubs, spies); do not
+  introduce a new mocking library
+- Cover happy path, edge cases, and error paths as specified in the test case list
+- Place test files in the correct test target / Tests directory and module namespace
+- For async code use `async` tests and structured concurrency; avoid `DispatchSemaphore` hacks
+- Each test function tests exactly one behavior; names describe behavior, not implementation
+- IF Regression Mode (regression scenario is set): write EXACTLY ONE test for the
+  regression scenario above — do NOT sweep for other coverage gaps; add a one-line
+  comment on the test function: `// Regression: verifies fix for [root cause]`
+
+Respond in the same language as the user's request.
+```

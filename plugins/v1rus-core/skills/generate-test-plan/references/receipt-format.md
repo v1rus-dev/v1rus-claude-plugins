@@ -1,8 +1,10 @@
+Referenced from: `plugins/developer-workflow/skills/generate-test-plan/SKILL.md` (§Receipt).
+
 # Test Plan Receipt Format
 
 When this skill is invoked with an explicit `slug` argument, in addition to the permanent
 document, produce a **receipt** at `swarm-report/<slug>-test-plan.md` that downstream
-consumers (`multiexpert-review`, the acceptance gate) can read for receipt-based gating.
+consumers (`multiexpert-review`, `acceptance`) can read for receipt-based gating.
 
 The permanent file remains the source of truth. The receipt is metadata + pointer.
 
@@ -65,7 +67,7 @@ under the canonical slug-based filename:
 
 - Permanent file generated at `docs/testplans/<slug>-test-plan.md`, where `<slug>` is
   either provided inline or derived from the feature name per the Slug resolution rules
-  in SKILL.md. If the plan may later be consumed by the acceptance gate (Branch 2 mount), pick
+  in SKILL.md. If the plan may later be consumed by `acceptance` (Branch 2 mount), pick
   the eventual slug at creation time so the file is deterministically mountable without
   renaming.
 - No `swarm-report/<slug>-test-plan.md` receipt is written.

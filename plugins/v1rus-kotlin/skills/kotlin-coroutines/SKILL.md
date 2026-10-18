@@ -1,20 +1,20 @@
 ---
 name: kotlin-coroutines
-description: |-
-  On-demand depth for reviewing or designing Kotlin coroutine and Flow code: scope ownership, dispatcher injection, main-safety, cancellation propagation, Flow operator order, hangs from first()/receive(), and coroutine testing. Use when reviewing concurrency code, debugging a hang/leak/lost cancellation, or designing a repository/use case/state holder with Flow.
-  Not for: routine edits of .kt files (the kotlin-coroutines rule injects itself on edit), UI lifecycle collection details (platform plugin rules), or non-Kotlin concurrency.
+description: "Kotlin coroutine and Flow rules a model gets wrong without a reminder: scope ownership per layer (a repository owns no scope), CoroutineDispatcher injected via constructor instead of a hardcoded Dispatchers.IO, suspend functions are main-safe so callers never wrap them in withContext, stateIn + WhileSubscribed paired with lifecycle-aware collection, flowOn/retry/catch ordering, indefinite suspension on first()/receive(), CancellationException must be rethrown (and bare runCatching is banned in suspend code), withContext(NonCancellable) only in finally, error mapping at layer boundaries, and the TestDispatcher/Turbine testing rules. Load when writing or reviewing suspend functions, Flows, ViewModels, repositories, or coroutine tests."
 ---
 
-# Kotlin coroutines review
+# Kotlin Coroutines & Flow
 
-The rule text is `${CLAUDE_PLUGIN_ROOT}/rules/kotlin-coroutines.md`; read it in full before reviewing.
+The full rulebook is `${CLAUDE_PLUGIN_ROOT}/rules/coroutines.md` — **read it** before writing or
+reviewing coroutine or `Flow` code. Same single source as the `path-rules` hook injects on a `.kt`
+edit, so it may already be in context.
 
-Review checklist, in order of production impact:
-1. Every catch of `Exception`/`Throwable` or `runCatching` in suspend code lets `CancellationException` through.
-2. No hardcoded dispatcher; suspend functions in data/domain are main-safe and callers do not wrap them.
-3. No lifecycle-bound or application scope leaking into repositories/use cases.
-4. `first()`/`single()`/`receive()` on sources that may not emit have a timeout or a `firstOrNull()`.
-5. `retry` before `catch`; `flowOn` once at the producer; `stateIn` uses `WhileSubscribed` with a lifecycle-aware collector.
-6. Tests: shared scheduler across test dispatchers, Main replaced when needed, no sleeps.
+Generic structured-concurrency basics are deliberately absent; the file covers only the recurring
+mistakes. The three that cause production bugs:
 
-Report only real defects with file and line, each with a concrete fix. For performance angles (thread exhaustion, blocking main, `GlobalScope`), delegate to the `performance-expert` agent.
+- **`CancellationException` must propagate.** Any `catch (e: Exception)` in suspend code rethrows it
+  first, and bare `runCatching { }` is banned in suspend code because it swallows cancellation.
+- **`retry { }` goes before `catch { }`.** With `catch` first the error is consumed and `retry` never
+  runs.
+- **`first()` on a `SharedFlow(replay = 0)` or a `Channel` can hang forever.** Wrap in
+  `withTimeout`, or use `firstOrNull()` when absence is a valid outcome.

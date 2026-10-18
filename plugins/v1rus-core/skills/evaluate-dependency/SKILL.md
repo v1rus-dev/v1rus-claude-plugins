@@ -1,18 +1,18 @@
 ---
 name: evaluate-dependency
-description: "Evaluate whether a new library/dependency is worth adopting BEFORE adding it to a build file. Gathers objective signals (latest version, stability, known CVEs, GitHub activity, issue dynamics, license, owner) — via a Maven dependency-intelligence tool when available — plus web reputation/sentiment and adoption, then delegates to an independent judge subagent for a verdict (ADOPT / ADOPT WITH CAUTION / AVOID) and asks how to proceed. Optimised for JVM/Maven; degrades to web-only for other ecosystems. Use when: about to add a new dependency, \"should we use X\", \"is this library worth adding\", \"vet/evaluate this library\", \"is X still maintained\". Do NOT use for: bumping an already-used dependency's version (use a version/changelog lookup tool), resolving version conflicts or BOM alignment (a build-system specialist agent, if installed), or deep code security audits (security-expert)."
+description: "Evaluate whether a new library/dependency is worth adopting BEFORE adding it to a build file. Gathers objective signals (latest version, stability, known CVEs, GitHub activity, issue dynamics, license, owner) — via a Maven dependency-intelligence tool when available — plus web reputation/sentiment and adoption, then delegates to the dependency-evaluator agent for a verdict (ADOPT / ADOPT WITH CAUTION / AVOID) and asks how to proceed. Optimised for JVM/Maven; degrades to web-only for other ecosystems. Use when: about to add a new dependency, \"should we use X\", \"is this library worth adding\", \"vet/evaluate this library\", \"is X still maintained\". Do NOT use for: bumping an already-used dependency's version (use a version/changelog lookup tool), resolving version conflicts or BOM alignment (build-engineer), or deep code security audits (security-expert)."
 ---
 
 # Evaluate Dependency
 
 Vet a candidate library before it enters the build. The skill collects objective signals,
-hands them to an independent judge subagent for a verdict, and brings the
+hands them to the `dependency-evaluator` agent for a verdict, and brings the
 adopt/avoid decision back to you in chat — so a dependency is a deliberate choice, not a
 side effect of writing code.
 
 **When this fires.** Trigger it the moment a *new* dependency is about to be introduced —
-whether the user asks "should we use X?" or you are about to edit a build file or manifest
-(`build.gradle[.kts]`, `libs.versions.toml`, `pom.xml`, `package.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`) to add a coordinate that is not already present.
+whether the user asks "should we use X?" or you are about to edit `build.gradle[.kts]`,
+`gradle/libs.versions.toml`, or `pom.xml` to add a coordinate that is not already present.
 Upgrading an already-used dependency is out of scope (that is a version/changelog lookup).
 
 **Graceful degradation — non-negotiable.** This skill must run without any MCP server. When a
@@ -54,12 +54,12 @@ than guessing.
 
 ## Phase 3: Judge
 
-Launch a fresh general-purpose subagent (Agent tool, inherited model) as an independent judge, passing the candidate, its purpose,
-and every signal gathered in Phase 2. Instruct it to add web reputation/sentiment and adoption
-checks (maintainer responsiveness, community complaints, real-world adoption, alternatives) and return the verdict — **ADOPT / ADOPT WITH CAUTION / AVOID** — with a signal table,
+Launch the `dependency-evaluator` agent via the Agent tool, passing the candidate, its purpose,
+and every signal gathered in Phase 2. Let the agent add web reputation/sentiment and adoption
+checks and return the verdict — **ADOPT / ADOPT WITH CAUTION / AVOID** — with a signal table,
 risks (with severity), and any alternatives.
 
-Do not second-guess the judge's verdict; if it reports a missing signal you can cheaply provide,
+Do not second-guess the agent's verdict; if it is missing a signal you can cheaply provide,
 fetch it and re-run rather than overriding.
 
 ## Phase 4: Decide (dialogue)

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "v1rus-dotnet",
+  "displayName": "v1rus .NET",
+  "version": "1.0.0",
+  "description": "C# and ASP.NET Core backend layer for v1rus: a four-project solution (Api / Application / Domain / Infrastructure) with an enforced dependency direction, central package management plus shared Directory.Build.props, nullable reference types and warnings as errors, minimal-API endpoint modules with ProblemDetails responses, a Result type for expected failures and exceptions only for defects, EF Core with configuration classes and reviewed migrations, IHttpClientFactory typed clients, the options pattern with startup validation, ILogger message templates and OpenTelemetry, xUnit with WebApplicationFactory and Testcontainers, and the dotnet-engineer and test-runner agents.",
+  "author": { "name": "v1rus" },
+  "license": "UNLICENSED",
+  "keywords": ["v1rus", "dotnet", "csharp", "aspnetcore", "efcore", "backend"],
+  "dependencies": ["v1rus-core"]
+}

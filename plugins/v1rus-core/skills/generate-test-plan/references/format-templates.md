@@ -1,3 +1,5 @@
+Referenced from: `plugins/developer-workflow/skills/generate-test-plan/SKILL.md` (§Test Plan Format).
+
 # Test Plan Format Templates
 
 Every generated test plan must follow this exact structure:
@@ -18,7 +20,7 @@ generated: YYYY-MM-DD
 | **Scope** | [one-line summary of what is covered] |
 | **Status** | Draft / Ready for Review / Approved |
 
-The `type: test-plan` frontmatter lets `multiexpert-review` and the acceptance gate identify the
+The `type: test-plan` frontmatter lets `multiexpert-review` and `acceptance` identify the
 artifact deterministically (Signal #1 of the classifier). `slug` matches the receipt and
 any decomposition artifact for the same feature.
 

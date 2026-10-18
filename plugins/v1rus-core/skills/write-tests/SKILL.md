@@ -1,6 +1,6 @@
 ---
 name: write-tests
-description: "Write retroactive tests for existing code — classes, modules, or directories lacking coverage — and write a focused regression test for a specific bug fix. Discovers test infrastructure, plans test cases, delegates generation to an implementation agent, verifies tests pass. Use when: \"write tests for\", \"add tests to\", \"test this class\", \"increase coverage\", \"add unit tests\", \"this code has no tests\", \"cover with tests\", \"retroactive tests\", \"add regression test for this fix\", \"write a test that catches this bug\", \"regression test after fixing\", \"test to verify the fix\". Do NOT use when: user wants a test plan document (use generate-test-plan), or tests are part of a new feature (engineer agent handles inline). Running tests on a live app and exploratory QA are out of scope; device/UI tests are not written."
+description: "Write retroactive tests for existing code — classes, modules, or directories lacking coverage — and write a focused regression test for a specific bug fix. Discovers test infrastructure, plans test cases, delegates generation to platform engineer agents (kotlin-engineer, swift-engineer), verifies tests pass. Use when: \"write tests for\", \"add tests to\", \"test this class\", \"increase coverage\", \"add unit tests\", \"this code has no tests\", \"cover with tests\", \"retroactive tests\", \"add regression test for this fix\", \"write a test that catches this bug\", \"regression test after fixing\", \"test to verify the fix\". Do NOT use when: user wants a test plan document (use generate-test-plan), or tests are part of a new feature (engineer agent handles inline). Running tests on a live app and exploratory QA are out of scope; device/UI tests are not written."
 ---
 
 # Write Tests
@@ -10,10 +10,11 @@ discovers what needs testing, understands the project's test infrastructure, pla
 delegates code generation to the appropriate agent, verifies the tests, and reports results.
 
 **Key principle:** this skill is an orchestrator. It never writes test code directly — it
-delegates to an implementation agent (see Phase 4.1). UI targets are out of
-scope: no device or UI tests. The skill's job is discovery, planning, delegation, and verification.
+delegates to a platform engineer agent: `kotlin-engineer` for Kotlin/Android logic targets,
+or `swift-engineer` for Swift/iOS logic targets. UI targets (Compose / SwiftUI) are out of
+scope — no device/UI tests. The skill's job is discovery, planning, delegation, and verification.
 
-**Author-fixes-broken-tests rule** — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` ("Whoever breaks a test fixes it"). Skipping or `@Ignore`-ing without a tracked follow-up issue is not allowed.
+**Author-fixes-broken-tests rule** — see the `v1rus-qa` skill § 4. Skipping or `@Ignore`-ing without a tracked follow-up issue is not allowed.
 
 **Disambiguation:**
 - *Intentional behaviour change* — your new test asserts a different (intentional) outcome from a pre-existing test → update the older test in the same run, with a one-line comment explaining the new contract.
@@ -36,17 +37,17 @@ Short kebab-case slug from the target name (e.g. `user-repository`, `auth-module
 
 ### 1.2 Read target code
 
-For each file in scope identify: public API surface, dependencies (constructor params, injected services), complexity indicators (branching, state, error handling), and whether the code is UI (**out of scope**, no device tests written) or non-UI (business logic / data layer / services / models / repositories — the testable surface).
+For each file in scope identify: public API surface, dependencies (constructor params, injected services), complexity indicators (branching, state, error handling), and whether the code is UI (Compose / SwiftUI — **out of scope**, no device tests written) or non-UI (business logic / data layer / services / models / repositories — the testable surface).
 
 ### 1.3 Find existing tests
 
-Check standard test locations — per ecosystem, e.g. `src/test/` (JVM), `Tests/<Target>Tests/` (SwiftPM), `__tests__/` or `*.test.ts` (JS/TS), `*_test.go` next to the source (Go), `tests/` (Python/Rust). Prefer a code-index tool to locate test classes by symbol; fall back to `Grep`. Look for test functions/classes that exercise the target.
+Check standard test locations — Kotlin: `src/test/`, `src/androidTest/`, `src/commonTest/`; Swift: `Tests/<TargetName>Tests/` (SwiftPM) or the Xcode test target. Prefer a code-index tool to locate test classes by symbol; fall back to `Grep`. Look for `@Test` (JUnit / Swift Testing) or `XCTestCase` subclasses that exercise the target.
 
 ### 1.4 Identify untested code
 
 **Skip in Regression Mode.** Compare the public API surface against existing test coverage: no references → fully untested; partial references missing edge cases → partially tested; comprehensive coverage → skip.
 
-Public-API coverage gate — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` (public-API coverage gate).
+Public-API coverage gate — see the `v1rus-qa` skill § 1.
 
 ### 1.5 Check for existing test plan
 
@@ -56,7 +57,7 @@ Look for a test plan in `docs/testplans/` covering the target. If found, read it
 
 ## Phase 2: Discover Test Infrastructure
 
-Testing infra detection — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` (test infrastructure is project-defined) for project-marker files. Inspect 3-5 existing test files plus the relevant build configuration to discover the framework, assertion library, mocking / test-double approach, async-testing helpers, and naming / file-placement conventions. Compile results into a structured **Test Infrastructure Summary** that the Phase 4 engineer agent consumes verbatim.
+Testing infra detection — see the `v1rus-qa` skill § 5 for project-marker files. Inspect 3-5 existing test files plus the relevant build configuration to discover the framework, assertion library, mocking / test-double approach, async-testing helpers, and naming / file-placement conventions. Compile results into a structured **Test Infrastructure Summary** that the Phase 4 engineer agent consumes verbatim.
 
 The goal is simple: generated tests must look hand-written. Never introduce a new framework or style that isn't already present in the project.
 
@@ -64,9 +65,9 @@ See [`references/test-infrastructure-discovery.md`](references/test-infrastructu
 
 ### Framework detection
 
-Engineer agents follow the canonical algorithm from [`references/test-infrastructure-discovery.md`](references/test-infrastructure-discovery.md): existing test files in the module under change → build-file dependencies → match the project's existing framework → the ecosystem's standard framework as a last resort (confirm with the owner when nothing exists). Stop at the first step that yields a definite answer; never introduce a new framework without explicit user approval. UI / instrumentation test frameworks are out of scope.
+Engineer agents follow the canonical algorithm from [`references/test-infrastructure-discovery.md`](references/test-infrastructure-discovery.md): existing test files in the module under change → build-file dependencies → match the project's existing framework → platform default (Android/Kotlin JVM: JUnit 5 + MockK; KMP: `kotlin.test`; iOS ≥ 5.9: `swift-testing`; iOS < 5.9: XCTest). Stop at the first step that yields a definite answer; never introduce a new framework without explicit user approval. UI / instrumentation test frameworks are out of scope.
 
-If no implementation agent covers the target's language, say so and ask the owner whether to use a general-purpose agent.
+Other ecosystems (Java-only, JS/TS, Rust, etc.) are out of scope for `write-tests` delegation in this plugin; surface them to the user.
 
 #### Escalation rules
 
@@ -101,7 +102,7 @@ For each untested or partially tested class/function, determine:
 
 **Skip this phase in Regression Mode** — a regression scenario is always a single focused test case; no prioritization is needed.
 
-Test priority — see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` (test priority). If the target is large (more than 5 classes to test), present the list with a one-line note on each (complexity, risk surface) and ask the user which to prioritize; recommend starting with the highest-complexity / highest-risk subset. If the target is small (5 or fewer classes), proceed without asking.
+Test priority — see the `v1rus-qa` skill § 2. If the target is large (more than 5 classes to test), present the list with a one-line note on each (complexity, risk surface) and ask the user which to prioritize; recommend starting with the highest-complexity / highest-risk subset. If the target is small (5 or fewer classes), proceed without asking.
 
 ### 3.3 Lightweight plan
 
@@ -120,7 +121,16 @@ the agent writes the code.
 
 ### 4.1 Select agent
 
-Pick the implementation agent for the target's language: a language engineer agent from an installed stack plugin (for example the Kotlin or Go or TypeScript plugin's engineer) when one exists, otherwise a general-purpose agent with `model: sonnet`. **UI targets are out of scope**: no device or UI tests are written; note them and skip. If the chosen agent is not installed the call fails with a clear message: report it and fall back to the general-purpose agent.
+| Target code type | Agent |
+|-----------------|-------|
+| Kotlin business logic, data layer, domain, ViewModel | `kotlin-engineer` |
+| Swift business logic, data layer, services, models, repositories | `swift-engineer` |
+
+Route by language: Kotlin/Android logic targets go to `kotlin-engineer`; Swift/iOS/macOS
+logic targets go to `swift-engineer`. **UI targets (Compose / SwiftUI) are out of scope** —
+no device/UI tests are written; note them and skip. If the required platform plugin is not
+installed, the Agent call will fail with a clear message — report it and ask the user to
+install the matching platform plugin.
 
 ### 4.2 Agent prompt
 
@@ -128,7 +138,8 @@ Every delegation prompt must include: target code paths, the Phase 2 Test Infras
 Summary, the Phase 3 test cases, a style-reference test file, and the Phase 1.5 test plan
 if one exists.
 
-See [`references/agent-prompts.md`](references/agent-prompts.md) for the prompt template. Fill in the `{…}` placeholders and keep the section headings intact.
+See [`references/agent-prompts.md`](references/agent-prompts.md) for the full prompt templates for `kotlin-engineer`
+and `swift-engineer`. Fill in the `{…}` placeholders and keep the section headings intact.
 
 ---
 
@@ -163,8 +174,10 @@ Steps:
    ```
 3. Run **only the new regression test** (use the narrowest filter available):
    ```bash
-   # use the project's own runner with its narrowest filter, e.g.:
-   #   <runner> test --filter <single test>   (names differ per ecosystem)
+   # Kotlin — run single test class
+   ./gradlew :module:test --tests "*.ClassName"
+   # Swift — run single test
+   swift test --filter Suite/testMethod
    ```
 4. **If RED** (test fails) → contract verified. Restore tracked files to pre-revert state
    while keeping the untracked test file intact (it has not been committed yet):
@@ -202,7 +215,7 @@ Then run step 3. Do NOT resolve toward the fix side — that would produce a fal
 
 ### 5.1 Run tests
 
-Run the test suite for the target module using the project's own build system and test commands (from its CLAUDE.md or build config), preferring the narrowest filter. No-device unit / integration tests only: instrumented, UI and device tests are out of scope.
+Run the test suite for the target module using the build system already in the project — Gradle (`./gradlew :module:test`), SwiftPM (`swift test`, optionally `--filter <Suite>/<method>`), or Xcode (`xcodebuild test -scheme <Scheme> -destination 'platform=macOS' -only-testing:<TestTarget>/<TestClass>/<testMethod>`). No-device unit / integration tests only — instrumented / Compose UI / device tests are out of scope.
 
 ### 5.2 Handle failures
 
@@ -224,7 +237,8 @@ If tests fail, classify each failure:
 ### 5.3 Fix cycle
 
 For test bugs:
-1. Delegate the fix to the implementation agent that wrote the test with the failure output and the test file path
+1. Delegate the fix to the engineer agent that wrote the test (`kotlin-engineer` /
+   `swift-engineer`) with the failure output and the test file path
 2. Re-run the tests
 3. Repeat up to 3 times total
 

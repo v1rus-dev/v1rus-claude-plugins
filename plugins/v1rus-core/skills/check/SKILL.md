@@ -1,19 +1,74 @@
 ---
 name: check
-description: |-
-  Mechanical verification of the current change: L0 build, L1 static analysis, and L2 tests when the complexity band calls for them, using the project's own commands. Returns PASS or FAIL with the failing level.
-  Triggers: "check", "does it build", "run the checks", "verify the change compiles", and between phases of finalize.
-  Do NOT use for: semantic review (code-reviewer, finalize), writing tests (write-tests), or running a whole suite after a no-logic edit (a compile is enough).
+description: "Verification gate — run the project's build, its static analysis, and only the tests the current change can actually affect, then report one PASS or FAIL with the real failing output. This is the 'does it work' gate (L0 build + L1 static analysis + L2 scoped tests), distinct from finalize (how the code is written) and acceptance (what the code does). Load when asked to check, verify, or validate a change, between finalize rounds, after applying fixes, or before offering a PR. Never edits code."
 ---
 
 # Check
 
-Mechanical gate, no judgement. Scope the check to the change (see `${CLAUDE_PLUGIN_ROOT}/rules/qa-and-testing.md` § Re-run scope).
+Run the verification levels the change requires and report a single verdict. This skill **executes
+and diagnoses — it never edits code.** A failure is reported back to whoever wrote the change; the
+author fixes it (see the `v1rus-qa` skill § 4).
 
-1. Find the commands: project CLAUDE.md, README, CI config, then root marker files. Ask only where a guess would be wrong (Xcode scheme, monorepo module ownership).
-2. Pick the scope: logic/behavior/signature change: affected module's tests; no-logic change (annotation, rename, imports, comments, strings): compile only; config/markdown only: nothing.
-3. Run in order, stopping at the first failing level: L0 build of the affected module, L1 lint/type check (if the project defines them), L2 tests (only when the complexity band is 7+ or the change touched tests).
-4. Delegate long builds or test runs to the `test-runner` agent so the output stays out of the main context.
-5. Report: `PASS` with the levels run, or `FAIL` with the level, the exact command, and the trimmed error. Do not fix anything here; the caller owns fixes.
+`check` owns **whether it works**. `finalize` owns **how it is written**. The acceptance gate owns
+**what it does**. Running one does not close another.
 
-Also scan the diff for leftover `TEMP-LOG` lines (see skill `v1rus-logging`); any hit is a FAIL.
+## Scope the run to the change — do not reflexively run everything
+
+A full multi-minute suite after every edit is waste. Pick the level from what the change can
+affect (the rule is defined once in the `v1rus-qa` skill § "Test re-run scope"):
+
+| Change | What to run |
+|---|---|
+| Config, rules, markdown only | nothing — no build, no tests |
+| Annotation-only, pure rename/move, import cleanup, dead-code removal, comment/string edits | L0 compile of the affected module only |
+| Logic, behaviour or signature change | L0 + L1 + L2 for the affected module(s) |
+| Large change, cross-module change, or the final pre-PR gate | L0 + L1 + full relevant suite |
+
+When several review findings are being fixed, **batch them** and check once — not once per finding.
+
+## L0 — Build
+
+Compile the affected part, not always the whole repo. Discover the command instead of guessing:
+read the project's `CLAUDE.md` first, then the root marker file (`build.gradle*`, `Package.swift`,
+`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `Makefile`, `*.csproj`).
+
+If the project documents its build and test tasks, use exactly those. If it does not and a wrong
+guess is plausible — an Xcode scheme or destination, a Python runner's flags, which module owns the
+changed files in a monorepo — **stop and ask** rather than running something arbitrary.
+
+L0 failing means every later level is meaningless: report and stop.
+
+## L1 — Static analysis
+
+Whatever the project actually has configured, in its own invocation: linters (ktlint, detekt,
+SwiftLint, ESLint, ruff, clippy, `go vet`), type checks (`tsc --noEmit`, mypy), and the build's own
+warnings-as-errors setup. Do not introduce a tool the project has not adopted, and do not "fix" a
+pre-existing violation outside the diff — report it separately as untouched debt.
+
+## L2 — Tests
+
+Run the tests covering the changed behaviour. Below complexity 7 no tests were written for the
+change, so L2 here means "the existing suite for the affected module still passes", not "new tests
+exist".
+
+**Delegate long runs.** If the project provides a `test-runner` agent, dispatch the run to it — a
+multi-minute build must not consume the orchestrating session's context. Otherwise run it directly
+and keep the output out of context by capturing failures only.
+
+A skipped or `@Ignore`d test without a tracked-issue link is a FAIL, not a pass (`v1rus-qa` § 4).
+
+## Report
+
+One verdict, then only what is actionable:
+
+```
+CHECK: PASS | FAIL
+Levels run: L0 <task> | L1 <tools> | L2 <tasks>   (and what was deliberately skipped, with the reason)
+
+FAIL details (omit when PASS):
+- <module>:<test or file>  — <one-line cause>
+  <the real error output, trimmed to the relevant lines>
+```
+
+Never report PASS for a level that was not run — say it was skipped and why. "Should be fine",
+"looks correct", and "the build probably passes" are not verification.

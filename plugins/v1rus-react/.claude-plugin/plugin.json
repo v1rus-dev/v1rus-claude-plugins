@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "v1rus-react",
+  "displayName": "v1rus React",
+  "version": "1.0.0",
+  "description": "Web frontend layer for v1rus: React with the Next.js App Router in TypeScript. Server components by default with the \"use client\" boundary pushed to the leaves, feature folders beside the route tree, server state owned by server components or TanStack Query and never mirrored into useState, URL as the default place for shareable client state, the screen-state and accessibility checklist (loading / empty / error-with-retry / not-found / content, navigation reachable in every state, focus management, semantic elements, keyboard and contrast), styling through design tokens with Tailwind, react-hook-form with a zod resolver, next-intl localisation with locale drift caught in CI, bundle and rendering performance, and Vitest plus Testing Library with Playwright for browser flows. Ships the web-developer and test-runner agents.",
+  "author": {
+    "name": "v1rus"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "web",
+    "react",
+    "nextjs",
+    "app-router",
+    "frontend",
+    "accessibility"
+  ],
+  "dependencies": [
+    "v1rus-typescript"
+  ]
+}

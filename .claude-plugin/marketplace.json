@@ -1,6 +1,6 @@
 {
   "name": "v1rus-dev",
-  "description": "Personal layered Claude Code plugins: core charter plus Kotlin, Compose, Android, Go and TypeScript stacks.",
+  "description": "Layered Claude Code plugins: a stack-agnostic engineering baseline plus conventions, agents and skills per technology stack (Kotlin, Compose, Android, KMP, Flutter, .NET, Go, TypeScript, Node, React, fullstack).",
   "owner": {
     "name": "v1rus-dev"
   },
@@ -8,38 +8,74 @@
     {
       "name": "v1rus-core",
       "source": "./plugins/v1rus-core",
-      "description": "Baseline charter, shared agents/skills and the rules engine for all v1rus plugins.",
-      "category": "core"
+      "description": "Corporate baseline: communication style, non-negotiable engineering rules, quality/acceptance gates, testing strategy, source-trust tiers, review agents and planning skills. Stack-agnostic — every v1rus project starts here.",
+      "category": "conventions"
     },
     {
       "name": "v1rus-kotlin",
       "source": "./plugins/v1rus-kotlin",
-      "description": "Kotlin/JVM/KMP rules, skills and agents.",
+      "description": "Kotlin, JVM and Gradle conventions plus the kotlin-engineer, build-engineer and performance-expert agents. Pulls in v1rus-core.",
       "category": "language"
     },
     {
       "name": "v1rus-compose",
       "source": "./plugins/v1rus-compose",
-      "description": "Jetpack Compose and Compose Multiplatform UI rules, skills and agents.",
-      "category": "ui"
+      "description": "Compose application layer shared by Compose Multiplatform and native Android: the Destination-Screen split and MVI store, screen-state and accessibility checklist, typed routes with dialogs and bottom sheets as destinations, Koin modules, localisation, and the full Compose performance and stability skill set. Pulls in v1rus-kotlin and v1rus-core.",
+      "category": "platform"
+    },
+    {
+      "name": "v1rus-kmp",
+      "source": "./plugins/v1rus-kmp",
+      "description": "Kotlin Multiplatform layer on top of v1rus-compose: commonMain constraints and expect/actual discipline, the KMP module graph, the KMP data layer (Room builder and Ktor client as expect/actual per platform), commonTest conventions, the KMP pipeline profile, and the iOS/Swift agents. Pulls in v1rus-compose, v1rus-kotlin and v1rus-core.",
+      "category": "platform"
     },
     {
       "name": "v1rus-android",
       "source": "./plugins/v1rus-android",
-      "description": "Android platform rules, skills and agents.",
+      "description": "Native Android layer: the Gradle module graph of an Android app without multiplatform source sets, manifest and Context/lifecycle discipline, the Android data layer (Room, Ktor on OkHttp, DataStore), unit versus instrumented test conventions, and the Android pipeline profile. Pulls in v1rus-compose, v1rus-kotlin and v1rus-core.",
+      "category": "platform"
+    },
+    {
+      "name": "v1rus-flutter",
+      "source": "./plugins/v1rus-flutter",
+      "description": "Flutter and Dart conventions: layered architecture with enforced boundaries, Bloc plus Cubit, sealed Result, hand-written sealed models with equatable, Retrofit over Dio, Drift with secure storage and preferences, get_it, typed go_router routes, and the flutter-engineer and flutter-ui-developer agents. Pulls in v1rus-core.",
+      "category": "platform"
+    },
+    {
+      "name": "v1rus-dotnet",
+      "source": "./plugins/v1rus-dotnet",
+      "description": "C# and ASP.NET Core backend layer: the Api/Application/Domain/Infrastructure split held by project references and architecture tests, minimal-API endpoint modules, a Result type with a closed DomainError hierarchy mapped to ProblemDetails, EF Core behind repositories, typed HttpClientFactory clients, the options pattern, structured ILogger templates, and xUnit with WebApplicationFactory and Testcontainers. Ships the dotnet-engineer and test-runner agents. Pulls in v1rus-core.",
       "category": "platform"
     },
     {
       "name": "v1rus-go",
       "source": "./plugins/v1rus-go",
-      "description": "Go rules, skills and agents.",
+      "description": "Go conventions: path-scoped language rules, verification flow, and the go-engineer, go-reviewer and go-test-runner agents. Pulls in v1rus-core.",
       "category": "language"
     },
     {
       "name": "v1rus-typescript",
       "source": "./plugins/v1rus-typescript",
-      "description": "TypeScript and JavaScript rules, skills and agents.",
+      "description": "TypeScript language layer, framework-agnostic: strict tsconfig and ESM discipline, type modelling with discriminated unions and exhaustiveness guards, schema validation at every I/O boundary, Error with cause and Result-versus-throw, floating promises and AbortSignal propagation, package exports maps, and the ESLint flat-config gate. No agents and no stack profile — those live in the layers above. Pulls in v1rus-core.",
       "category": "language"
+    },
+    {
+      "name": "v1rus-node",
+      "source": "./plugins/v1rus-node",
+      "description": "Node.js backend layer on NestJS: feature modules with an enforced inner layering, DI scopes and the request-scope trap, DTO validation and RFC 9457 error responses, Prisma behind a repository boundary, env validated once at startup, event-loop and graceful-shutdown discipline, pino with a correlation id, BullMQ with a transactional outbox, and Vitest plus supertest over Testcontainers. Ships the node-engineer and test-runner agents. Pulls in v1rus-typescript and v1rus-core.",
+      "category": "platform"
+    },
+    {
+      "name": "v1rus-react",
+      "source": "./plugins/v1rus-react",
+      "description": "Web frontend layer: React with the Next.js App Router in TypeScript. Server components by default with the client boundary at the leaves, server state owned by server components or TanStack Query, URL as the default place for shareable state, the screen-state and accessibility checklist, design tokens with Tailwind, react-hook-form with a zod resolver, next-intl with locale drift caught in CI, and Vitest with Testing Library plus Playwright. Ships the web-developer and test-runner agents. Pulls in v1rus-typescript and v1rus-core.",
+      "category": "platform"
+    },
+    {
+      "name": "v1rus-fullstack",
+      "source": "./plugins/v1rus-fullstack",
+      "description": "The seam between a NestJS backend and a Next.js web app in one repository: pnpm workspaces with a Turborepo task graph, the API contract defined once in a shared schema package with route descriptors, session and refresh across the seam, the env split that keeps a server secret out of the client bundle, contract tests and cross-seam e2e, and a contract-first pipeline profile. No engineer agents of its own — it escalates to v1rus-node and v1rus-react. Pulls in both.",
+      "category": "platform"
     }
   ]
 }

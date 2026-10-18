@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "v1rus-flutter",
+  "displayName": "v1rus Flutter",
+  "version": "2.1.1",
+  "description": "Flutter and Dart layer for v1rus: layered architecture (core / design_system / domain / data / features) with boundaries enforced by an analyzer plugin, Bloc for screens and Cubit for components, one-shot effects as a separate stream, a sealed Result at the data boundary, Retrofit endpoint interfaces over Dio with auth refresh, Drift plus secure storage and preferences, get_it modules per feature, typed go_router routes, hand-written sealed models with equatable instead of a model generator, official ARB localisation, and the flutter-engineer and flutter-ui-developer agents.",
+  "author": { "name": "v1rus" },
+  "license": "UNLICENSED",
+  "keywords": ["v1rus", "flutter", "dart", "bloc", "clean-architecture"],
+  "dependencies": ["v1rus-core"]
+}

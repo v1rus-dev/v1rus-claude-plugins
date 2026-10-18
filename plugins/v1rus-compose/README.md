@@ -1,29 +1,77 @@
 # v1rus-compose
 
-Compose (Jetpack Compose and Compose Multiplatform) layer. Depends on `v1rus-kotlin`. No charter: rules are path-scoped.
-
-Contents: path rules `compose-ui`, `compose-screen-quality`; skills `compose-screen-checklist`, `compose-api-verification`, `compose-performance`; agent `compose-developer` (sonnet).
-
-Rule paths are directory/name heuristics (`**/ui/**`, `**/presentation/**`, `**/designsystem/**`, `*Screen*`, `*Destination*`, `*Composable*`, `*Component*`, `*Theme*`) because the engine matches paths only, not file content. Compose files elsewhere will not auto-load the rules; the skills cover that.
-
-## Source, destination, why
-
-| Source | Destination | Why |
-|---|---|---|
-| agent-references/compose-rules.md | rules/compose-ui.md | Compose on any target; project symbols (StoreViewModel, `*IntentUi`, koinViewModel, CollectEffectsUiEvent, AppNavigator) generalized; CMP resources/KMP bullets kept short |
-| rules/mobile-ui.md | rules/compose-screen-quality.md | the checklist is true for Compose on any target; nothing Android-only in it; `R.string` wording made resource-neutral |
-| rules/mobile-ui.md | skills/compose-screen-checklist | review procedure as an on-demand door over the two rules |
-| rules/external-sources.md (fast-moving UI section) | skills/compose-api-verification (+ reference/roles.md) | roles A/B/C, CMP vs Jetpack version-alignment caveats; SwiftUI parts left out |
-| agents/performance-expert.md (UI section) | skills/compose-performance | Compose perf lives on this layer; performance-expert (kotlin) points to it |
-| agents/compose-developer.md | agents/compose-developer.md | project-specific module names, Koin, shared/designsystem, `$HOME` paths, language/return boilerplate removed; discovery step kept |
-
-Lossy: the original agent's illustrative skeleton code and the Destination code sample were dropped; the rules keep the prose. SwiftUI content untouched (out of scope).
-
-## Install
+Everything v1rus holds true for a **Compose application regardless of target**. Compose
+Multiplatform and native-Android Jetpack Compose share the same runtime, the same compiler plugin and
+the same UI conventions, so they share this layer. Depends on `v1rus-kotlin`, which depends on
+`v1rus-core` — installing this one pulls in both.
 
 ```
-/plugin marketplace add v1rus-dev/v1rus-claude-plugins
-/plugin install v1rus-compose@v1rus-dev
+/plugin install v1rus-compose@v1rus
 ```
 
-Dependencies (v1rus-kotlin) are resolved automatically from the same marketplace.
+Normally you do not install it directly: `v1rus-kmp` and `v1rus-android` both depend on it and pull
+it in. Install it on its own only for a Compose project that is neither — a desktop-only or
+Compose-for-Web surface.
+
+## What it contains
+
+### Conventions
+
+| Skill | Covers |
+|---|---|
+| `compose-ui-conventions` | The pre-review checklist: screen states, back navigation in every state, touch targets, `contentDescription`, theme tokens only, no raw enum in UI, list keys, `@Immutable` |
+| `compose-screen-architecture` | The reference screen: Destination ⇄ Screen ⇄ Part split, state hoisting, sections, previews (+ five reference documents) |
+| `compose-file-organisation` | One composable per file with a preview; the `ModelUi` exception |
+| `mvi-presentation` | Store-style ViewModel over State/Intent/Effect, single `ModelUi` file |
+| `compose-navigation-patterns` | Typed routes, serializer registration, feature isolation, dialogs and bottom sheets as destinations, result passing |
+| `compose-animations` | Every state-driven change is animated; API mapping, `transitionSpec` recipes, `contentKey`, the text-field-in-`AnimatedContent` trap |
+| `compose-clickability` | Clip before clickable, ripple containment, touch-target sizing, interaction sources, accessibility roles |
+| `di-koin-conventions` | Initialisation, where a binding goes, constructor injection, `getAll` + `bind` |
+| `localisation-and-strings` | Resources for everything user-visible including fallbacks; server text verbatim; closed sets mapped to localised labels; locales kept in sync |
+
+### Compose performance and stability
+
+Twenty-six deep-dive skills: stability inference and strong skipping, recomposition tracing and
+debugging, lazy-layout optimisation and prefetch, deferred state reads, effect usage, modifier-chain
+ordering, `Modifier.Node` migration, subcomposition pitfalls, `derivedStateOf`, flow collection,
+baseline profiles, R8 configuration, release-mode measurement, hot reload, and CI stability
+enforcement. `auditing-compose-performance` is the entry point that sequences the rest.
+
+These are shared deliberately. R8, Baseline Profiles, Macrobenchmark and Layout Inspector all act on
+an Android application — and a Compose Multiplatform project ships one too, so none of them is
+native-Android-only.
+
+### Path-scoped rules
+
+`rules/compose-files.md` fires on edits under feature, design-system, presentation or UI packages.
+Delivered by `hooks/path-rules.py`.
+
+### Agents
+
+| Agent | Role |
+|---|---|
+| `compose-developer` | Writes Compose UI and the MVI presentation layer — screens, composables, previews, theme usage, navigation, animation, the store ViewModel. Not the logic layer, which is `v1rus-kotlin:kotlin-engineer`. |
+
+`references/compose-rules.md` is the deep material that agent reads, addressed as
+`${CLAUDE_PLUGIN_ROOT}/references/compose-rules.md`. Its multiplatform-only addendum is the Compose
+Multiplatform UI section of the `v1rus-kmp:kmp-conventions` skill.
+
+## Where the target-specific parts live
+
+This layer never assumes a target. Anything that does belongs one layer up:
+
+| Concern | Layer |
+|---|---|
+| `commonMain` / `expect` / `actual`, iOS framework boundary, CMP version alignment | `v1rus-kmp` |
+| Gradle module graph of an Android app, manifest, `Context` and lifecycle, Room + Ktor-on-OkHttp + DataStore | `v1rus-android` |
+| Kotlin style, coroutines, Gradle | `v1rus-kotlin` |
+| Gates, review, testing bands, source trust | `v1rus-core` |
+
+A skill here that names a target-specific detail states the condition explicitly ("on a Compose
+Multiplatform project, additionally …") rather than assuming one.
+
+## What deliberately stays in the project
+
+A project's **concrete** architecture — exact module paths, the real names of its navigator, store,
+theme and result store, its Gradle task names — stays in that project's own `.claude/rules/` and
+`CLAUDE.md`. The plugin carries the pattern and the rule; the project carries the names.

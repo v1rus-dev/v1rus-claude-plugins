@@ -4,7 +4,7 @@ Go layer of the v1rus marketplace: path-scoped conventions, a verification flow,
 
 ## Contents
 
-Rules (injected by the engine on Write/Edit of matching files): `go-core` and `go-concurrency` (`**/*.go`), `go-mod` (`go.mod`, `go.sum`, `go.work`), `go-test` (`*_test.go`, `testdata/`), `go-sql` (`*.sql`, sqlc config, `migrations/`), `go-build` (Dockerfile, Makefile, Taskfile, golangci/goreleaser config).
+Rules (injected by `hooks/path-rules.py` on Write/Edit of matching files): `go-core` and `go-concurrency` (`**/*.go`), `go-mod` (`go.mod`, `go.sum`, `go.work`), `go-test` (`*_test.go`, `testdata/`), `go-sql` (`*.sql`, sqlc config, `migrations/`), `go-build` (Dockerfile, Makefile, Taskfile, golangci/goreleaser config).
 
 Skills (thin doors, bodies in `reference/`): `go-bootstrap`, `go-verify`, `go-new-service`, `go-http-endpoint`, `go-database`, `go-concurrency-review`, `go-errors-and-logging`, `go-write-tests`, `go-modernize`, `go-deps`, `go-release-build`, `go-perf`.
 
@@ -16,7 +16,7 @@ Rules phrased "(advisory)" are judgment calls with no mechanical check. Facts ab
 
 ## Deviations from the research playbook
 
-- No hooks beyond the synced engine (the playbook's PostToolUse gofmt and PreToolUse deny ideas are not implemented; they would need a custom hook file, a hook-contract decision for the orchestrator). The rules state the same constraints as text.
+- No hooks beyond the standard `hooks/path-rules.py` path-rule injector (the playbook's PostToolUse gofmt and PreToolUse deny ideas are not implemented; they would need a custom hook file, a hook-contract decision for the orchestrator). The rules state the same constraints as text.
 - HTTP, logging and database details live in skill references, not path rules, so every `.go` edit injects only `go-core` and `go-concurrency` (about 70 lines) instead of all topics.
 - `go-perf-analyst` agent not created (optional in the playbook; `go-perf` skill plus a core performance reviewer cover it).
 - Skill bodies point to `rules/` or their own `reference/`; shared command set lives in `go-verify/reference/commands.md`.

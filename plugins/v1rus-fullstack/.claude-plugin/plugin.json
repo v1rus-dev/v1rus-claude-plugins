@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "v1rus-fullstack",
+  "displayName": "v1rus TypeScript Fullstack",
+  "version": "1.0.0",
+  "description": "The seam between a NestJS backend and a Next.js web app living in one TypeScript repository: pnpm workspaces plus Turborepo layout with apps/* and packages/* and the boundaries between them, the API contract as a single shared schema package that the backend validates with and the frontend types against so a breaking change fails typecheck instead of production, auth and session across the seam (HttpOnly cookies, server-side session access, single-flight refresh, logout that clears both sides), the environment split that keeps a server secret out of the client bundle, verification across the seam (contract tests, Playwright against a real backend, seeding and CI task ordering), and the fullstack pipeline profile and MVP blueprint. Ships no engineer agents: implementation escalates to v1rus-node:node-engineer and v1rus-react:web-developer.",
+  "author": {
+    "name": "v1rus"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "v1rus",
+    "typescript",
+    "fullstack",
+    "monorepo",
+    "turborepo",
+    "nestjs",
+    "nextjs"
+  ],
+  "dependencies": [
+    "v1rus-node",
+    "v1rus-react"
+  ]
+}

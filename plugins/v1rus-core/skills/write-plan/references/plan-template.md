@@ -43,13 +43,13 @@ need to re-research.>
 | <what we chose> | <because…> | <X because…> |
 
 ## Dependencies
-<!-- Only if this change ADDS or BUMPS a dependency / plugin. The dependencies.md plan-stage gate —
+<!-- Only if this change ADDS or BUMPS a dependency / plugin. The the v1rus-dependencies skill plan-stage gate —
      a plan that introduces a library without these four outputs is not approvable. Delete this whole
      section if no dependency changes. -->
 For each new / bumped dependency:
 - **Identity:** `<group:artifact>` (or plugin id) — role in one line, why existing deps don't cover it.
-- **Freshness:** latest stable `X.Y.Z` (via a Maven dependency tool or the ecosystem scanner). Note any pre-release gap.
-- **Vulnerabilities:** an advisory scan (OSV via a Maven tool, or `npm audit` / `pip-audit` / …) — advisory IDs + fixed-in, or "no advisories".
+- **Freshness:** latest stable `X.Y.Z` (via `maven-mcp:latest-version` / ecosystem scanner). Note any pre-release gap.
+- **Vulnerabilities:** `maven-mcp:check-deps-vulnerabilities` (or `npm audit` / `pip-audit` / …) — advisory IDs + fixed-in, or "no advisories".
 - **API surface:** studied via `ksrc` / Context7 / official docs — entry points used, confirmed against the **current** API. For a major-version bump add the breaking-change diff.
 
 ## Risks & Mitigations
@@ -58,7 +58,7 @@ For each new / bumped dependency:
 | <risk> | critical / major / minor | <how the plan handles it> |
 
 ## Verification & Sources
-<How the FINISHED implementation is verified — the contract the acceptance gate checks against. Distinct
+<How the FINISHED implementation is verified — the contract `/acceptance` checks against. Distinct
 from the per-task `check` in tasks.md: that proves each task; this proves the whole change is done
 and correct. Mandatory output — a plan without it cannot be approved (qa-and-testing §6, §0).>
 

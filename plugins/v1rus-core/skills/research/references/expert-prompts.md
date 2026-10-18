@@ -6,7 +6,7 @@ Phase 2 launches each expert in one parallel message. Each agent runs independen
 > here overlap with `../../write-spec/references/research-prompts.md`, where they appear as an
 > enriched superset. The two files are kept separate **on purpose** so each skill stays
 > self-contained — do not merge them into a shared file. (Both skills route external-source
-> gathering through the same `source-researcher` agent + `${CLAUDE_PLUGIN_ROOT}/skills/v1rus-sources/reference/sources.md`, so that
+> gathering through the same `source-researcher` agent + the `v1rus-sources` skill, so that
 > method *is* shared — only the codebase prompts are intentionally duplicated.)
 
 All prompts must include this line: *"Respond in the same language as the research topic description."*
@@ -17,7 +17,7 @@ All prompts must include this line: *"Respond in the same language as the resear
 
 The method for discovering reachable tools/MCP, querying **all** relevant channels of a class,
 and cross-checking by trust tier is **not duplicated here**. It lives in one place:
-`${CLAUDE_PLUGIN_ROOT}/skills/v1rus-sources/reference/sources.md` § *Tool discovery & multi-channel use* (+ § *Verify library API
+the `v1rus-sources` skill § *Tool discovery & multi-channel use* (+ § *Verify library API
 before code* for stack composition, § *Trust assessment* for tiers). That rule is unconditional
 and is inherited by every subagent, so the `source-researcher` agent and the Explore /
 architecture tracks all apply the same discipline without restating it.
@@ -58,7 +58,7 @@ Track → focus mapping:
 | Dependencies | `dependency-intelligence` | current vs latest versions, CVEs, KMP/AGP compat, health, breaking changes, alternatives |
 
 The detailed per-class angles that used to live here now live in the agent's system prompt
-(`agents/source-researcher.md`) and in `sources.md` — single source, no restating.
+(`agents/source-researcher.md`) and in the `v1rus-sources` skill — single source, no restating.
 
 ---
 

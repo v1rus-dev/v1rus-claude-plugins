@@ -1,30 +1,36 @@
 # v1rus-kotlin
 
-Kotlin (JVM, multiplatform source sets) layer. Depends on `v1rus-core`. Compose and Android live in `v1rus-compose` / `v1rus-android`.
-
-Contents: charter (always on, ~10 lines); path rules `kotlin-style`, `kotlin-coroutines`, `gradle-build`; skills `kotlin-api-verification`, `gradle-dependency-gate`, `kotlin-coroutines`; agents `kotlin-engineer` (sonnet), `build-engineer` (sonnet), `performance-expert` (inherits).
-
-## Source, destination, why
-
-| Source | Destination | Why |
-|---|---|---|
-| rules/kotlin-style.md | rules/kotlin-style.md | Kotlin-true everywhere; project names removed; Clean/MVI layering merged in; KMP `commonMain` bullets kept (Kotlin-level, not iOS-specific); `viewModelScope` bullet kept as a layering statement, Android detail in v1rus-android |
-| rules/coroutines.md | rules/kotlin-coroutines.md | generic part; Hilt `@IoDispatcher`, `collectAsStateWithLifecycle`, `repeatOnLifecycle` moved out (Android/Compose) |
-| rules/coroutines.md (lifecycle, setMain, viewModelScope) | v1rus-android rules/android-platform.md | Android-only |
-| rules/gradle-style.md | rules/gradle-build.md | Gradle is not Android-only; added buildSrc/build-logic paths and convention-plugin bullets from build-engineer |
-| rules/external-sources.md (JVM parts), CLAUDE.md API-truth | skills/kotlin-api-verification | ksrc, trust tiers, staleness list; core is stack-agnostic |
-| rules/dependencies.md (Gradle/JVM gate) | skills/gradle-dependency-gate | procedure, on demand; tool names generic (maven-mcp as example) |
-| agents/kotlin-engineer.md | agents/kotlin-engineer.md | Koin/`shared/*`/StoreViewModel/ast-index/Russian-language/`$HOME` paths removed; UI boundary phrased for optional compose plugin |
-| agents/build-engineer.md | agents/build-engineer.md | block-scalar description, same expertise, rules paths via `${CLAUDE_PLUGIN_ROOT}` |
-| agents/performance-expert.md | agents/performance-expert.md | JVM domains kept; Compose UI and Android battery/leak sections moved to skills in the upper layers; inherits model (review agent) |
-
-Lossy: the original agents' return-contract/language lines and `memory: project`, `maxTurns`, TaskCreate tools were dropped (user-specific or core concern). The KMP/Android-specific agent-body examples were not preserved.
-
-## Install
+The Kotlin / JVM / Gradle layer shared by every v1rus Kotlin project. Depends on `v1rus-core` and
+is itself the base for `v1rus-compose`, and through it for `v1rus-kmp` and `v1rus-android`.
 
 ```
-/plugin marketplace add v1rus-dev/v1rus-claude-plugins
-/plugin install v1rus-kotlin@v1rus-dev
+/plugin install v1rus-kotlin@v1rus     # v1rus-core is installed automatically
 ```
 
-Dependencies (v1rus-core) are resolved automatically from the same marketplace.
+## What it contains
+
+| Component | Content |
+|---|---|
+| `rules/kotlin-style.md` | Visibility discipline, collection operators vs `for`, named arguments, empty blocks, value-class validation, parameter nullability, `commonMain` constraints, Clean Architecture + MVI layering. Injected automatically before any `.kt` / `.kts` edit. |
+| `rules/coroutines.md` | Scope ownership per layer, dispatcher injection, main-safety, `stateIn` pairing, operator ordering, cancellation propagation, error mapping, coroutine testing. Injected before any `.kt` edit. |
+| `rules/gradle-style.md` | `implementation` vs `api`, version catalogs, convention plugins. Injected before any `*.gradle.kts` / `libs.versions.toml` edit. |
+| `skills/` | Front doors to the three rulebooks (`kotlin-conventions`, `kotlin-coroutines`, `gradle-conventions`) for read-only and planning contexts that never trigger an edit, plus two standalone skills: `jvm-dependency-intelligence` (`ksrc` and Maven tooling) and `ktor-client-auth` (the access/refresh bearer contract — same on Android, KMP and backend, so it lives here once). |
+| `agents/kotlin-engineer.md` | Writes the logic side: business logic, data layer, networking, persistence, domain models, repositories, use cases, mappers, DI wiring, coroutines/Flow and their unit tests. Does not write UI. |
+| `agents/build-engineer.md` | Gradle configuration, build performance, module structure, AGP, KMP source sets, version catalogs, convention plugins. |
+| `agents/performance-expert.md` | JVM / Android / KMP performance review: N+1, memory, threading, jank, network, battery. |
+
+## Design notes
+
+**One source per rule.** Each rulebook lives once, in `rules/`. The `path-rules` hook injects it
+verbatim before a matching edit (deterministic, arrives before the code is written); the matching
+skill is a thin front door that points at the same file, for contexts that never edit — a reviewer, a
+planner, a question in chat. Do not fork the text into the skill.
+
+**Why the hook is duplicated.** `hooks/path-rules.py` is a copy of the one in `v1rus-core`.
+`${CLAUDE_PLUGIN_ROOT}` resolves per plugin, so a layer cannot read a sibling's `rules/` directory;
+each layer carrying its own copy is what makes the layers independently installable.
+
+**What deliberately is not here.** Anything Compose — UI, MVI presentation, Koin wiring,
+recomposition and stability — belongs to `v1rus-compose`. `commonMain`, `expect`/`actual` and iOS
+belong to `v1rus-kmp`; the Android module graph, manifest and `Context` discipline belong to
+`v1rus-android`. A rule that holds for every Kotlin project, backend included, belongs here.

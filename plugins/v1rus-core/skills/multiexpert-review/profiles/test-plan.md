@@ -18,7 +18,7 @@ reviewer_roster:
     - when: "auth|token|encryption|PII|credential"
       agent: security-expert
     - when: "SLA|latency|throughput|budget"
-      agent: performance-expert   # lives in v1rus-kotlin; optional: skipped when not installed (note it in the report)
+      agent: performance-expert
     - when: "a11y|accessibility"
       agent: ux-expert
 

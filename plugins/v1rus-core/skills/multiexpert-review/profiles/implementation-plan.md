@@ -15,14 +15,14 @@ reviewer_roster:
   optional_if:
     - agent: security-expert
       when: "auth|token|oauth|jwt|session|password|secret|credential|crypt|encrypt|pii|gdpr|permission|keystore"
-    - agent: performance-expert   # lives in v1rus-kotlin; optional: skipped when not installed (note it in the report)
+    - agent: performance-expert
       when: "performance|latency|throughput|cache|N\\+1|pagination|batch|memory|leak|coroutine|dispatcher|recomposition|jank|index|query plan"
     - agent: architecture-expert
       when: "new module|module boundary|dependency direction|layer|public api|abstraction|decoupl|circular|breaking change|interface contract"
-    - agent: build-engineer   # a build-system specialist; skipped when not installed
-      when: "build script|lockfile|version catalog|build-logic|convention plugin|new dependency|bump|plugin id"
+    - agent: build-engineer
+      when: "gradle|libs\\.versions|version catalog|build-logic|convention plugin|\\bagp\\b|\\bksp\\b|source set|new dependency|bump|plugin id"
     - agent: ux-expert
-      when: "screen|navigation|user-facing|accessibility|onboarding|error state|empty state|loading state"
+      when: "screen|navigation|user-facing|accessibility|compose ui|swiftui|onboarding|error state|empty state|loading state"
 receipt:
   path_template: "docs/plans/<slug>/plan.md"
   fields_to_update: [review_verdict, review_blockers]
@@ -65,8 +65,8 @@ Reject — as **critical** (blocks implementation) or **major** — any of these
   somewhere"), or a migration / behaviour-preserving task with no before-state baseline captured
   **before** implementation. Demand the concrete source, its status, and a sufficiency claim.
 
-Then apply these project-flow checks (this repo's rules — `qa-and-testing.md`, `task-types.md`,
-`dependencies.md`):
+Then apply these project-flow checks (this repo's rules — the `v1rus-qa` skill, the `v1rus-workflow` skill,
+the `v1rus-dependencies` skill):
 
 - **Complexity score** — the plan must carry a complexity score (1–10) with its band. Flag a score
   that looks **gamed low** to dodge tests (e.g. multi-module behavioural change scored ≤6). At

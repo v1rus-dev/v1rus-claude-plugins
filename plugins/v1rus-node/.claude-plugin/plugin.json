@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "v1rus-node",
+  "displayName": "v1rus Node",
+  "version": "1.0.0",
+  "description": "Node.js backend layer for v1rus: NestJS feature modules with an enforced inner layering (controller / application / domain / infrastructure), constructor injection with singleton scope by default and request scope only where its cost is paid knowingly, DTOs behind a global ValidationPipe that strips unknown properties, explicit response DTOs instead of leaked persistence models, typed domain errors mapped by one exception filter to an RFC 9457 problem response, Prisma behind a repository boundary with transactions that cover the whole invariant, environment validated once at startup and injected as typed config, pino structured logging with an AsyncLocalStorage correlation id, liveness and readiness probes, BullMQ jobs with idempotent handlers and an outbox, graceful shutdown that drains in-flight requests, and supertest plus Testcontainers e2e. Ships the node-engineer and test-runner agents.",
+  "author": { "name": "v1rus" },
+  "license": "UNLICENSED",
+  "keywords": ["v1rus", "node", "nestjs", "typescript", "backend", "prisma"],
+  "dependencies": ["v1rus-typescript"]
+}
