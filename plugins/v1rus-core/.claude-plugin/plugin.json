@@ -1,0 +1,8 @@
+{
+  "name": "v1rus-core",
+  "version": "1.1.0",
+  "description": "Baseline charter, workflow gates, shared review/research agents and skills, and the rules engine for all v1rus plugins.",
+  "author": {
+    "name": "v1rus-dev"
+  }
+}

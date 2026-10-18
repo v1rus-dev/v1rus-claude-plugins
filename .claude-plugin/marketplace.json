@@ -1,0 +1,45 @@
+{
+  "name": "v1rus-dev",
+  "description": "Personal layered Claude Code plugins: core charter plus Kotlin, Compose, Android, Go and TypeScript stacks.",
+  "owner": {
+    "name": "v1rus-dev"
+  },
+  "plugins": [
+    {
+      "name": "v1rus-core",
+      "source": "./plugins/v1rus-core",
+      "description": "Baseline charter, shared agents/skills and the rules engine for all v1rus plugins.",
+      "category": "core"
+    },
+    {
+      "name": "v1rus-kotlin",
+      "source": "./plugins/v1rus-kotlin",
+      "description": "Kotlin/JVM/KMP rules, skills and agents.",
+      "category": "language"
+    },
+    {
+      "name": "v1rus-compose",
+      "source": "./plugins/v1rus-compose",
+      "description": "Jetpack Compose and Compose Multiplatform UI rules, skills and agents.",
+      "category": "ui"
+    },
+    {
+      "name": "v1rus-android",
+      "source": "./plugins/v1rus-android",
+      "description": "Android platform rules, skills and agents.",
+      "category": "platform"
+    },
+    {
+      "name": "v1rus-go",
+      "source": "./plugins/v1rus-go",
+      "description": "Go rules, skills and agents.",
+      "category": "language"
+    },
+    {
+      "name": "v1rus-typescript",
+      "source": "./plugins/v1rus-typescript",
+      "description": "TypeScript and JavaScript rules, skills and agents.",
+      "category": "language"
+    }
+  ]
+}

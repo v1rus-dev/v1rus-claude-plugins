@@ -1,0 +1,11 @@
+{
+  "name": "v1rus-kotlin",
+  "version": "1.1.0",
+  "description": "Kotlin/JVM/KMP rules, skills and agents.",
+  "author": {
+    "name": "v1rus-dev"
+  },
+  "dependencies": [
+    "v1rus-core"
+  ]
+}

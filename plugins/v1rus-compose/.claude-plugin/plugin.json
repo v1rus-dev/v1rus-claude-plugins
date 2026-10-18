@@ -1,0 +1,11 @@
+{
+  "name": "v1rus-compose",
+  "version": "1.1.0",
+  "description": "Jetpack Compose and Compose Multiplatform UI rules, skills and agents.",
+  "author": {
+    "name": "v1rus-dev"
+  },
+  "dependencies": [
+    "v1rus-kotlin"
+  ]
+}
