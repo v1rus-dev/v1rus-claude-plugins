@@ -388,7 +388,7 @@ claude plugin disable v1rus-kmp --scope project
 > - **Codex — только по документации, не запускалось** (бинаря нет): проверена лишь структурная валидность
 >   JSON/TOML и работа адаптера на подложенных событиях. Всё, что про поведение Codex (загрузка плагина, trust-flow
 >   хуков, форма `apply_patch`, пути в скиллах, лимит 2500 токенов), остаётся неподтверждённым.
-> - Фаза 4 (дистрибуция: npm для OpenCode, публикация marketplace) не делалась.
+> - Дистрибуция OpenCode без клона: `install.sh` + release-архив (см. ниже); npm и публикация marketplace Codex не делались.
 
 Единый источник правды остаётся в `plugins/` (формат Claude Code). `dist/` генерируется и **не коммитится**
 (добавлен в `.gitignore`): сборка детерминирована, поэтому артефакт воспроизводится командой, а не хранится.
@@ -414,13 +414,74 @@ python3 scripts/build-targets.py --opencode-root "$HOME/.config/opencode" --code
 
 ### OpenCode
 
-Установка (глобально; для проекта - в `<project>/.opencode/`):
+#### Установка без клона репозитория (`install.sh`)
+
+Установщик - POSIX `sh` + `curl` + `tar` (+ `python3` для правки `opencode.json`; он же нужен хукам в рантайме).
+Он скачивает release-архив из GitHub Releases `v1rus-dev/v1rus-claude-plugins`, **проверяет sha256 до распаковки**
+и раскладывает файлы в `~/.config/opencode/` (или `$XDG_CONFIG_HOME/opencode`, или `<DIR>/.opencode` для `--project`).
+
+Однострочник (URL рабочий после слияния в `main`; `curl | sh` исполняет то, что пришло по сети, не глядя):
 
 ```
-cp -R dist/opencode/. ~/.config/opencode/
+curl -fsSL https://raw.githubusercontent.com/v1rus-dev/v1rus-claude-plugins/main/install.sh | sh -s opencode
 ```
 
-В `opencode.json` добавить чартер (`instructions` принимает `~/`-пути):
+Безопаснее - «скачать, прочитать, запустить» (и зафиксировать версию):
+
+```
+curl -fsSLO https://raw.githubusercontent.com/v1rus-dev/v1rus-claude-plugins/main/install.sh
+less install.sh                                   # прочитать
+sh install.sh opencode --print --version vX.Y.Z  # dry-run: что будет скачано/создано/изменено
+sh install.sh opencode --version vX.Y.Z
+```
+
+Опции: `--version vX.Y.Z|latest` (по умолчанию `latest`), `--project DIR`, `--print`, `--uninstall`, `--yes`.
+
+- **`--print`** - dry-run: архив скачивается и проверяется во временный каталог, печатается список новых/обновляемых/
+  конфликтующих файлов и что будет с `opencode.json`; в каталог установки не пишется ничего.
+- **Обновление** - повторный запуск с нужной `--version`: файлы прошлой установки (по манифесту) заменяются, ушедшие из
+  релиза удаляются. Повторный запуск той же версии ничего не меняет.
+- **Конфликты.** Файл, который уже есть и **не** принадлежит прошлой установке (или правился после неё), не перезаписывается
+  молча. В интерактивном терминале установщик показывает список и спрашивает; без терминала (`curl | sh`) он прерывается с
+  кодом 1 и ничего не меняет. Решение: посмотреть список (`--print`), затем повторить с `--yes` - оригиналы сохраняются как
+  `<имя>.bak` рядом, при `--uninstall` они возвращаются на место.
+- **`opencode.json`.** Нет файла - создаётся; есть - в `instructions` добавляется путь чартера (без дублей, остальное
+  сохраняется; перед изменением копия в `opencode.json.bak`). Если файл не парсится как JSON (JSONC с комментариями,
+  `opencode.jsonc`) - он не трогается, установщик печатает строку для ручного добавления.
+- **`--uninstall`** - удаляет только файлы из манифеста `<root>/v1rus/.install-manifest`, возвращает `.bak`, убирает **только свою**
+  запись из `instructions` (если `opencode.json` не менялся после установки - восстанавливает его байт-в-байт), подчищает
+  пустые каталоги, созданные установкой. Файлы, которые вы правили после установки, сохраняются как `.bak`.
+- **`--project DIR`** - ставит в `DIR/.opencode` (скиллы, агенты, плагин и `opencode.json` с чартером - только для проекта).
+- **Путь установки.** В архиве в текстах агентов и команд стоит плейсхолдер `@@V1RUS_OPENCODE_ROOT@@`, установщик подставляет
+  реальный абсолютный путь и падает, если плейсхолдер остался. Скиллы используют относительные пути, плагин находит хуки
+  относительно собственного файла - от каталога установки больше ничего не зависит.
+- **Переопределение источника:** `V1RUS_RELEASE_BASE_URL` (по умолчанию `https://github.com/v1rus-dev/v1rus-claude-plugins/releases`;
+  структура под ним как на GitHub: `download/<tag>/v1rus-opencode-<tag>.tar.gz[.sha256]` и `latest/download/v1rus-opencode.tar.gz[.sha256]`).
+  Работает и с `file://`.
+
+Что проверено, а что нет: установщик и упаковщик покрыты тестами `tests/test_install_sh.py` (без сети, `file://`-релиз,
+изолированный HOME: раскладка, отказ при несовпадении sha256, конфликты с `--yes` и без, идемпотентность, `--print`,
+`--uninstall` с возвратом дерева и пользовательского `opencode.json` к исходному состоянию, JSONC, нестандартный каталог,
+запуск через pipe). Эмпирически (OpenCode 2.x, изолированные HOME/XDG, mock-провайдер вместо LLM): после установки через
+`install.sh` - глобально и с `--project` в каталог с пробелом - OpenCode видит 159 скиллов (157 наших + 2 лишних, как и раньше), чартер попадает в
+system prompt, `read .env` и `sudo` блокируются хуками, path-rule инжектируется, субагенты (`code-reviewer`) в списке.
+**Не проверено:** реальный релиз не публиковался, поэтому URL из однострочника заработает только после первого тега `vX.Y.Z`
+(workflow `.github/workflows/release.yml` не запускался, не валидировался в Actions); `shellcheck` в окружении не было,
+скрипт проверен только `sh -n` и тестами под `sh` (bash) - на dash/busybox/macOS не гонялся; Windows не поддерживается.
+
+Релиз: тег `vX.Y.Z` -> workflow прогоняет `check-plugins.py --all`, unit-тесты и `build-targets.py --check`, собирает архив
+`python3 scripts/package-release.py --version vX.Y.Z` (детерминированный `v1rus-opencode-vX.Y.Z.tar.gz` + `.sha256`) и
+публикует GitHub Release через `gh release create`.
+
+#### Установка из клона (для разработки)
+
+```
+python3 scripts/build-targets.py
+cp -R dist/opencode/. ~/.config/opencode/        # для проекта - в <project>/.opencode/
+```
+
+В этом режиме пути в текстах агентов берутся из `--opencode-root` (по умолчанию `~/.config/opencode`), `opencode.json` и
+манифест не ведутся. Чартер нужно добавить вручную (`instructions` принимает `~/`-пути):
 
 ```json
 { "instructions": ["~/.config/opencode/v1rus/charter.md"] }
