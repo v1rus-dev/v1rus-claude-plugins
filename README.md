@@ -376,6 +376,142 @@ claude plugin disable v1rus-kmp --scope project
 
 ---
 
+## Codex и OpenCode
+
+> **Статус: реализованы фазы 1-3 как генератор `scripts/build-targets.py` (строго аддитивно: `plugins/` и
+> `.claude-plugin/` не меняются, Claude Code не затронут).** Что проверено:
+> - **OpenCode — проверено эмпирически** на установленном OpenCode 2.x в изолированном окружении (отдельные
+>   HOME/XDG, mock OpenAI-compatible провайдер вместо LLM, реальный цикл инструментов): все 157 скиллов видны модели (в списке OpenCode 159 - два лишних, происхождение не выясняли),
+>   чартер из `instructions` попадает в system prompt, `read .env` и `sudo` блокируются хуками, path-rule
+>   инжектируется один раз и сбрасывается после compaction, агент `code-reviewer` получает ровно `read/glob/grep`.
+> - **OpenCode 1.x — по документации, не запускалось** (плагин содержит ветку `server()` под V1 API).
+> - **Codex — только по документации, не запускалось** (бинаря нет): проверена лишь структурная валидность
+>   JSON/TOML и работа адаптера на подложенных событиях. Всё, что про поведение Codex (загрузка плагина, trust-flow
+>   хуков, форма `apply_patch`, пути в скиллах, лимит 2500 токенов), остаётся неподтверждённым.
+> - Фаза 4 (дистрибуция: npm для OpenCode, публикация marketplace) не делалась.
+
+Единый источник правды остаётся в `plugins/` (формат Claude Code). `dist/` генерируется и **не коммитится**
+(добавлен в `.gitignore`): сборка детерминирована, поэтому артефакт воспроизводится командой, а не хранится.
+
+### Сборка
+
+```
+python3 scripts/build-targets.py                 # -> dist/opencode, dist/codex
+python3 scripts/build-targets.py --check         # CI: собрать дважды во временный каталог, провалидировать, сравнить; ничего не пишет
+python3 scripts/build-targets.py --opencode-root "$HOME/.config/opencode" --codex-root "$HOME/.codex"   # значения по умолчанию (~/...)
+```
+
+`--opencode-root` / `--codex-root` определяют, какой путь подставляется в тексты агентов и команд (у них нет
+«базовой папки»); в скиллах пути относительные и работают из любого места установки. Тесты:
+`python3 -m unittest discover -s tests` (включая `tests/test_build_targets.py`).
+
+Что делает генератор:
+- `${CLAUDE_PLUGIN_ROOT}` заменяется во всех текстах (скиллы - относительным путём от папки скилла, агенты и команды -
+  путём под `--*-root`); ссылка на несуществующий файл или оставшийся токен - ошибка сборки.
+- Коллизия имён скиллов - ошибка с указанием обоих плагинов. Агент `test-runner` есть в шести стековых плагинах,
+  поэтому в выводе он переименован в `test-runner-<стек>` (`test-runner-kmp` и т.д.).
+- Хуки (`git-guard.py`, `secrets-guard.py`, `inject-charter.py`, `path-rules.py`) копируются **без изменений**.
+
+### OpenCode
+
+Установка (глобально; для проекта - в `<project>/.opencode/`):
+
+```
+cp -R dist/opencode/. ~/.config/opencode/
+```
+
+В `opencode.json` добавить чартер (`instructions` принимает `~/`-пути):
+
+```json
+{ "instructions": ["~/.config/opencode/v1rus/charter.md"] }
+```
+
+Состав `dist/opencode/`: `skills/` (все 157 скиллов), `agents/`, `commands/`, `plugins/v1rus.js`,
+`v1rus/<plugin>/{rules,references,hooks}`, `v1rus/charter.md`. Нужен `python3` в PATH: плагин - тонкий ESM-мост на чистом JS
+без зависимостей и сборки, он вызывает оригинальные python-хуки по протоколу Claude Code (stdin JSON, exit 2 = deny).
+
+- **Два API плагинов.** Установленный OpenCode 2.x читает только `default export { id, setup }` (V1-плагин в виде
+  `export const X = async () => ...` он отвергает: «Plugin must export a default definition»). Наш `v1rus.js` экспортирует
+  один объект с `setup` (V2) и `server` (V1, нужен OpenCode >= 1.18.29 по документации V2).
+- **Блокировка.** `read .env`, `sudo ...`, plain `--force`, коммит из main и т.д. - бросок исключения в
+  `tool.execute.before` (V2: `ctx.tool.hook`), инструмент не выполняется, модель получает текст ошибки хука.
+- **Path-scoped rules - ограничение.** В OpenCode нет способа внедрить контекст *до* вызова инструмента. V2: текст
+  правил добавляется в system prompt всех последующих запросов модели сессии (хук `context`), то есть после первой
+  правки подходящего файла, а не до неё. V1: текст дописывается к результату инструмента. Один раз за сессию
+  (маркеры `path-rules.py`); сброс после compaction (V2 - хук `compaction`, проверено; V1 - `experimental.session.compacting`
+  и событие `session.compacted`, не проверено).
+- **Агенты.** `description` + `mode: subagent`; `model` **опущен** (алиасы `sonnet/opus` не имеют надёжного
+  маппинга на `provider/model-id`, субагент использует модель вызывающего агента); `tools` -> `permission`
+  (deny-all плюс allow для перечисленных); `color`, `memory`, `maxTurns`, `effort`, `skills`, `disallowedTools` убраны
+  (OpenCode передаёт неизвестные ключи провайдеру как опции модели).
+- **Ограничения.** Описания 18 скиллов длиннее 1024 символов: OpenCode 2.x их принимает (проверено), в документации 1.x
+  заявлен лимит 1024 (не проверено; сборка печатает предупреждение). Команды (`commands/`) скопированы, но не
+  прогонялись. Инструмент `execute` (code mode) и MCP-инструменты хуками не покрываются.
+
+### Codex (по документации, не запускалось)
+
+```
+codex plugin marketplace add ./dist/codex           # путь к корню маркетплейса (внутри .agents/plugins/marketplace.json)
+# затем включить ОДИН плагин, например в .codex/config.toml:
+#   [plugins."v1rus-kotlin@v1rus-dev"]
+#   enabled = true
+cp dist/codex/agents/*.toml ~/.codex/agents/        # агенты не компонент плагина
+cp -R dist/codex/v1rus ~/.codex/v1rus               # файлы, на которые ссылаются агенты
+```
+
+- Каждый плагин в `dist/codex/plugins/<name>/` - **самодостаточный бандл**: зависимости слиты (kmp содержит core, kotlin,
+  compose), поэтому ставится один слой, не несколько (иначе дубли чартера и хуков).
+- Манифест - корневой `plugin.json` со схемой agent-plugins.org 1.0.0, хуки - `extensions.com.openai.hooks`; маркетплейс
+  `.agents/plugins/marketplace.json` с `policy.installation = AVAILABLE`, `policy.authentication = ON_INSTALL` (значение
+  взято из примера доки) и `category` из нашего маркетплейса.
+- Хуки идут через адаптер `hooks/codex-adapter.py` (исходник `scripts/adapters/codex_hook_adapter.py`): он приводит
+  вход `apply_patch` (по доке патч лежит в `tool_input.command`) к формату Claude Code и запускает неизменённый хук.
+  Разбор патча защитный (также `file_path`/`path`/`patch`/`patchText`), форма не подтверждена на живом Codex.
+- Хуки плагинов в Codex требуют ручного trust-ревью (`/hooks`) и поддержаны только для вручную установленных desktop-плагинов
+  [док]; это best-effort граница, не полный enforcement.
+- Агенты: `name`, `description`, `developer_instructions`; `model` и `sandbox_mode` не выставляются (нет проверенного маппинга).
+- `commands/` ядра лежат в бандле как обычные файлы (на них ссылаются скиллы), но слэш-командами в Codex не являются.
+- Чартер ~7.6 КБ укладывается в лимит SessionStart-контекста (~2500 токенов) по оценке 3.6 символа на токен;
+  не проверялось, сборка предупредит при росте.
+
+### Фазы и критерии приёмки
+
+| Фаза | Содержание | Статус |
+|---|---|---|
+| 1. Skills + чартер | OpenCode: skills + `instructions`; Codex: плагин со skills | OpenCode - сделано и проверено (скиллы и чартер в system prompt). Codex - сгенерировано, не запускалось |
+| 2. Агенты | md -> OpenCode md / Codex toml | OpenCode - проверено (права транслированы, субагент запущен с `read/glob/grep`). Codex - toml валиден, не запускалось; `model` не транслируется намеренно |
+| 3. Хуки и правила | адаптер + JS-плагин | OpenCode - проверено e2e (блокировка, once-per-session, сброс после compaction). Codex - адаптер проверен на подложенных событиях, в самом Codex не запускалось |
+| 4. Дистрибуция | marketplace Codex, npm для OpenCode | не делалась (сейчас - копирование из `dist/`) |
+
+### Спайки
+
+Выполнены (OpenCode 2.x, изолированное окружение, mock-провайдер):
+- (6) Терпимость к лишним ключам frontmatter: скилл с `paths` и `argument-hint` принимается и попадает в список скиллов.
+- (7) `instructions` читает файл по `~/`- и абсолютному пути (чартер в system prompt); rules с `paths` в `instructions` не подавались.
+- Плагин загружается, блокирует `sudo` и `read .env`, e2e через цикл инструментов. Скилл при загрузке сообщает
+  «Base directory for this skill», так что относительные пути в скиллах работают.
+
+Остаются (Codex, бинаря нет) и всё не подтверждено:
+1. Подстановка/разрешение путей в скиллах Codex (мы используем относительные пути от папки скилла).
+2. Реальная форма `tool_input` у `apply_patch` (по доке `command`).
+3. Trust-flow хуков в CLI.
+4. Установка Codex-плагина без desktop.
+5. Лимит 2500 токенов против размера `charter.md`.
+6. Принимает ли Codex `plugin.json` с нашими полями и `policy.authentication = ON_INSTALL` для плагина без авторизации.
+7. Поведение OpenCode 1.x (плагин `server()`, лимит описаний 1024).
+
+### Источники
+
+- <https://developers.openai.com/codex/plugins/build>
+- <https://learn.chatgpt.com/docs/hooks>
+- <https://developers.openai.com/codex/subagents>
+- <https://opencode.ai/docs/plugins/>
+- <https://opencode.ai/docs/skills/>
+- <https://opencode.ai/docs/agents/>
+- <https://opencode.ai/docs/rules/>
+
+---
+
 ## Обновление и удаление
 
 ```bash
