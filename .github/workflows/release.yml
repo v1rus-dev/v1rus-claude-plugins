@@ -1,0 +1,60 @@
+name: release
+
+# Publishes the OpenCode install archive for a pushed version tag (v*).
+# Consumers: install.sh (curl ... | sh -s opencode). Nothing here touches plugins/ or .claude-plugin/.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # create the GitHub Release and upload assets; nothing else
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          case "$TAG" in
+            v[0-9]*) ;;
+            *) echo "tag must look like vX.Y.Z, got $TAG" >&2; exit 1 ;;
+          esac
+          case "$TAG" in
+            *[!0-9A-Za-z._-]*) echo "unsupported characters in tag $TAG" >&2; exit 1 ;;
+          esac
+
+      - name: Check plugins
+        run: python3 scripts/check-plugins.py --all
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests
+
+      - name: Check generated targets
+        run: python3 scripts/build-targets.py --check
+
+      - name: Build release archive
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python3 scripts/package-release.py --version "$TAG" --out dist/release
+          # Stable names for `--version latest` (releases/latest/download/<asset>): same bytes, version-less name.
+          cp "dist/release/v1rus-opencode-$TAG.tar.gz" dist/release/v1rus-opencode.tar.gz
+          (cd dist/release && sha256sum v1rus-opencode.tar.gz > v1rus-opencode.tar.gz.sha256)
+          ls -l dist/release
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            --verify-tag \
+            dist/release/*.tar.gz dist/release/*.sha256
